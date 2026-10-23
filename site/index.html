@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Western chorus frog habitat in Montérégie</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+
+    <main class="story">
+      <h1>Western chorus frog habitats and conservation areas</h1>
+
+      <p class="lede">The Western chorus frog is a small amphibian that breeds in shallow wetlands. 
+        Amphibians are beneficial to our ecosystem since they help cycle nutrients, shape food webs, and reduce mosquito numbers from wetlands,
+        (Hocking & Babbitt, 2014). In the The Great Lakes / St. Lawrence Western Chorus frog population (Canadian Shield population), 
+        which includes my study area of Montérégie, they are listed as a threatened specie (Environment
+        and Climate Change Canada, n.d.). Wetlands cover only 4.9% of Montérégie (578 km²), and suitable habitat for 
+        the La Prairie population fell by 57.3% between 1992 and 2013 due to housing development (Environment and Climate Change Canada, 2015). On my
+        map, 10 of 56 recorded habitat sites overlap a protected area.</p>
+
+      <p><strong>This map is for</strong> amphibian conservation groups.</p>
+      <p><strong>What you can do here:</strong> see which recorded Western chorus frog habitats overlap a protected area, and which do not. You can click a shape for details, and click the legend rows to switch layers on and off.</p>
+
+      <p id="status">Loading...</p>
+
+<section>
+  <h2>Not in this iteration</h2>
+  <ul>
+    <li>This map does not show housing and urban growth. Development is a major pressure on this habitat, but the map doesn’t show it because
+      I couldn’t find a dataset that shows it yet.</li>
+    <li>This map does not include other kinds of protection. “Protected” on the map only means the habitat zones
+      overlap the protected areas data. It doesn’t include legal protections that don’t have a map
+      (such as the wetland permit rules).</li>
+    <li>This map does not have federal critical habitat areas for the chorus frog, because
+      I couldn’t find a direct download of the map file yet.</li>
+  </ul>
+</section>
+
+      <section>
+        <h2>Where this comes from</h2>
+        <ul>
+  <li><a href="https://www.donneesquebec.ca/recherche/dataset/occurrences-especes-en-situation-precaire">Occurrences d’espèces en situation précaire</a>, CDPNQ, MELCCFP, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Kept amphibians only, then the Montérégie region.</li>
+  <li><a href="https://www.donneesquebec.ca/recherche/dataset/aires-protegees-au-quebec">Registre des aires protégées et des AMCE au Québec</a>, MELCCFP, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Kept the Montérégie areas and removed plant, bird and muskrat habitat designations.</li>
+  <li><a href="https://www.donneesquebec.ca/recherche/dataset/decoupages-administratifs">Découpages administratifs</a>, Ministère des Ressources naturelles et des Forêts, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Used the Montérégie boundary.</li>
+  <li>Basemap © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.</li>
+</ul>
+      </section>
+
+      <section>
+       <h2>References</h2>
+        <ul class="refs">
+        <li>Environment and Climate Change Canada. (n.d.). <em>Western chorus frog (Great Lakes / St. Lawrence – Canadian Shield population)</em> [Species profile]. Species at Risk Public Registry. Retrieved October 21, 2026, from <a href="https://species-registry.canada.ca/index-en.html#/species/668-0">https://species-registry.canada.ca/index-en.html#/species/668-0</a></li>
+        <li>Environment and Climate Change Canada. (2015). <em>Western chorus frog: Science assessment</em>. Government of Canada. <a href="https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/related-information/western-chorus-frog-science-assessment.html">https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/related-information/western-chorus-frog-science-assessment.html</a></li>
+        <li>Hocking, D. J., &amp; Babbitt, K. J. (2014). Amphibian contributions to ecosystem services. <em>Herpetological Conservation and Biology, 9</em>(1), 1–17. <a href="http://www.herpconbio.org/Volume_9/Issue_1/Hocking_Babbitt_2014.pdf">http://www.herpconbio.org/Volume_9/Issue_1/Hocking_Babbitt_2014.pdf</a></li>
+</ul>
+      </section>
+    </main>
+
+    <!-- THE MAP (right column) -->
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
