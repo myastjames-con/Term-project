@@ -1,0 +1,15 @@
+{
+ "scope": "quebec",
+ "protected_scope": "matching",
+ "simplify_degrees": 0.0005,
+ "amphibian_records": 571,
+ "species": 3,
+ "protected_records": 119,
+ "protected_areas": 81,
+ "overlap_pieces": 165,
+ "sizes_mb": {
+  "amphibians": 0.62,
+  "protected_areas": 0.07,
+  "overlap": 0.14
+ }
+}
