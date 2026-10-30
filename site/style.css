@@ -144,3 +144,4 @@ table.mini th:not(:first-child), table.mini td:not(:first-child) { text-align: r
 
 .refs { list-style: none; padding-left: 0; }
 .refs li { padding-left: 2em; text-indent: -2em; margin-bottom: 10px; }
+.toolbar-title { flex: 1; font-weight: 600; padding-left: 4px; }

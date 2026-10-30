@@ -375,18 +375,16 @@ legend.onAdd = () => {
 legend.addTo(map);
 
 
-// 10. SEARCH BOX: "Which habitats have the largest share of their area protected?"
-// The box sits top left, next to the menu button. Without typing anything it lists the habitats
-// with the highest percentage of their area inside a protected area. Typing narrows the list to a
-// species or a protected area. Clicking a result zooms to that habitat and opens its popup.
+// 10. RANKING LIST: "Which habitats have the largest share of their area protected?"
+// The list sits top left, next to the menu button. The pull-down chooses how it is ranked
+// (% protected, hectares protected, or habitat size). Clicking a result zooms to that habitat and opens its popup.
 const toolbar = L.control({ position: 'topleft' });
 toolbar.onAdd = () => {
   const div = L.DomUtil.create('div', 'toolbar');
   div.innerHTML =
     '<div class="toolbar-row">' +
       '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>' +
-      '<input id="q" type="search" placeholder="Loading…" autocomplete="off" disabled ' +
-             'aria-label="Search by species or protected area">' +
+      '<span class="toolbar-title">Which habitats are most protected?</span>' +
       '<button class="toolbar-min" id="results-toggle" title="Hide or show the results" aria-label="Hide or show the results">–</button>' +
     '</div>' +
     '<div class="results" id="results">' +
@@ -398,10 +396,9 @@ toolbar.onAdd = () => {
       '<div class="results-note" id="results-note"></div>' +
       '<ol id="results-list"></ol>' +
     '</div>';
-  // Clicks, scrolling and typing in the box don't move or zoom the map behind it.
+  // Clicks and scrolling in the box don't move or zoom the map behind it.
   L.DomEvent.disableClickPropagation(div);
   L.DomEvent.disableScrollPropagation(div);
-  L.DomEvent.on(div.querySelector('#q'), 'keydown keyup keypress', L.DomEvent.stopPropagation);
   return div;
 };
 toolbar.addTo(map);
@@ -409,7 +406,7 @@ toolbar.addTo(map);
 // The menu button opens and closes the info panel (section 11).
 document.getElementById('menu-btn').onclick = () => document.getElementById('info-panel').classList.toggle('open');
 
-// Hide or show the results list under the search box.
+// Hide or show the results list.
 document.getElementById('results-toggle').onclick = () => {
   const box = document.getElementById('results');
   const hidden = box.classList.toggle('hidden');
@@ -420,24 +417,13 @@ let highlight = null;     // the yellow outline around the habitat you clicked i
 
 // Runs once the habitat data has loaded.
 function setUpSearch() {
-  const input = document.getElementById('q');
   const rank = document.getElementById('rank');
   const list = document.getElementById('results-list');
   const note = document.getElementById('results-note');
 
-  // Lower case, no accents: so "monteregie" finds "Montérégie".
-  const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-
-  // One entry per habitat: its shape on the map, its data, and the text the search looks through.
+  // One entry per habitat: its shape on the map and its data.
   const records = [];
-  groups.habitat.eachLayer(layer => {
-    const p = layer.feature.properties;
-    records.push({
-      layer: layer,
-      p: p,
-      text: norm([p.GCOMNAME, p.SCOMNAME, p.SNAME, p.protected_by, inEnglish(statusEnglish, p.LOIEMV), p.LOIEMV].join(' '))
-    });
-  });
+  groups.habitat.eachLayer(layer => records.push({ layer: layer, p: layer.feature.properties }));
 
   // How the list is sorted. The tie-break matters: many small habitats are 100% protected,
   // so the one with more protected hectares comes first.
@@ -448,14 +434,13 @@ function setUpSearch() {
   };
 
   function render() {
-    const words = norm(input.value).split(/\s+/).filter(Boolean);          // what was typed, word by word
-    let rows = records.filter(r => words.every(w => r.text.includes(w)));  // every word must match
-    // With nothing typed, show only habitats that have some protection (unless ranking by size).
-    if (!words.length && rank.value !== 'size') rows = rows.filter(r => r.p.is_protected);
+    let rows = records.slice();
+    // Show only habitats that have some protection (unless ranking by size).
+    if (rank.value !== 'size') rows = rows.filter(r => r.p.is_protected);
     rows.sort(sorters[rank.value]);
 
-    note.textContent = rows.length === 0 ? 'No habitat matches.' :
-      (words.length ? rows.length + ' habitats match' : rows.length + ' habitats have some protection') +
+    note.textContent = rows.length === 0 ? 'No habitat to show.' :
+      rows.length + (rank.value === 'size' ? ' habitats' : ' habitats have some protection') +
       (rows.length > 10 ? ' (top 10 shown)' : '');
 
     list.innerHTML = '';
@@ -483,14 +468,11 @@ function setUpSearch() {
       pane: 'overlapPane', interactive: false,
       style: { color: '#ffb000', weight: 4, fill: false }
     }).addTo(map);
-    // paddingTopLeft keeps the habitat to the right of the search box, so its popup is not hidden behind it
+    // paddingTopLeft keeps the habitat to the right of the list, so its popup is not hidden behind it
     map.fitBounds(r.layer.getBounds(), { paddingTopLeft: [380, 60], paddingBottomRight: [60, 60], maxZoom: 14 });
     r.layer.openPopup();
   }
 
-  input.disabled = false;
-  input.placeholder = 'Search a species or protected area';
-  input.oninput = render;
   rank.onchange = render;
   render();
 }
