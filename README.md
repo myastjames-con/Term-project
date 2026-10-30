@@ -76,4 +76,17 @@ The topic, the scope decisions, the story on the page and the final checks were 
 At my demo, I didn't have all my amphibina data in I only had Western Chorus forgs.
 Today I will make my second layer (protected areas) coloured by which year they were established so that it answer the question of which one has been there the longest. 
 
+## A3 feature: [a short name]
+For A3 I will add a way to show which habitats are the most protected, so that my reader can see the percentage and hectars of a habitat inside a conservation zone.
+It has depth because it (computes / responds / brings in) responds to which habitats are not protected at all and their sizes.
+I will know it works when I can see all the sizes and percentages of the habitats and conservations zones.
+My edge case is that there are a lot of little habitat aones athat are either 100% covered or 100% not so there will be a lot of those.
+
+Test 1. I [do something a normal reader would do].
+  Expected: [exactly what appears or changes].
+Test 2. I [do it again, differently].
+  Expected: [...]
+Test 3. I [the edge case].
+  Expected: [a message the reader understands; no console error].
+
 © 2026 Mya St-James. All rights reserved.
