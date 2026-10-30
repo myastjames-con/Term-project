@@ -1,0 +1,4 @@
+data/*.gpkg
+data/*.zip
+data/registre_aires_prot_GPKG/
+.DS_Store
