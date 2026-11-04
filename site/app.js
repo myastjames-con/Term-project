@@ -430,6 +430,17 @@ document.getElementById('results-toggle').onclick = () => {
 };
 
 let highlight = null;     // the yellow outline around the habitat you clicked in the list
+let highlightLayer = null; // the habitat that outline belongs to
+
+// The yellow outline belongs to one answer. When a different popup opens (a click on the map),
+// or that habitat's popup is closed, the outline goes too, so it never marks an old answer.
+function clearHighlight() {
+  if (highlight) map.removeLayer(highlight);
+  highlight = null;
+  highlightLayer = null;
+}
+map.on('popupopen', e => { if (highlightLayer && e.popup._source !== highlightLayer) clearHighlight(); });
+map.on('popupclose', e => { if (highlightLayer && e.popup._source === highlightLayer) clearHighlight(); });
 
 // Runs once the habitat data has loaded.
 function setUpSearch() {
@@ -480,11 +491,12 @@ function setUpSearch() {
     // in case the legend or a chip hid this habitat, show it again
     if (!groups.habitat.hasLayer(r.layer)) { hiddenSpecies.delete(r.p.SNAME); filters.prov = null; refreshHabitat(); }
     document.querySelectorAll('.legend-item[data-species]').forEach(el => el.classList.toggle('off', hiddenSpecies.has(el.dataset.species)));
-    if (highlight) map.removeLayer(highlight);
+    clearHighlight();
     highlight = L.geoJSON(r.layer.feature, {
       pane: 'overlapPane', interactive: false,
       style: { color: '#ffb000', weight: 4, fill: false }
     }).addTo(map);
+    highlightLayer = r.layer;
     // paddingTopLeft keeps the habitat to the right of the list, so its popup is not hidden behind it
     map.fitBounds(r.layer.getBounds(), { paddingTopLeft: [380, 60], paddingBottomRight: [60, 60], maxZoom: 14 });
     r.layer.openPopup();
