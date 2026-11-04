@@ -68,6 +68,14 @@ const inEnglish = (table, value) => table[value] || table[String(value).replace(
 
 // Makes text safe to put inside HTML.
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Makes a clickable element reachable with the keyboard: Tab reaches it, Enter or Space presses it.
+function makeButton(el) {
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+  });
+}
 // Writes a number the way a reader expects: 1,234.5
 // Values under 10 keep two decimals, so a small habitat shows as 0.42 ha and not 0 ha.
 const num = (v, digits) => v == null ? 'n/a' :
@@ -133,6 +141,7 @@ function buildFilterBar(sites) {
     el.title = n + ' habitat sites. Click to show only these, click again to show all.';
     el.innerHTML = '<span class="sw"></span>' + lv.label + ' <span class="n">' + n + '</span>';
     el.onclick = () => { filters.prov = filters.prov === lv.code ? null : lv.code; refreshHabitat(); };
+    makeButton(el);
     bar.appendChild(el);
   });
   document.getElementById('filter-note').textContent = 'Click a status to show only those habitats.';
@@ -177,7 +186,7 @@ function addGroup(key, url, pane, base, popupFn, filterFn, after) {
       // If a file can't load, say so plainly instead of staying on "Loading..."
       console.error(err);
       document.getElementById('status').textContent =
-        'Could not load ' + url + ' (' + err.message + '). Open this page with Live Server, run the notebook so it writes the files into the data folder, and check the file names.';
+        'The map data did not load, so the map is empty. Check your internet connection and reload the page. If it keeps happening, the data file is missing from the site.';
     });
 }
 
@@ -286,6 +295,7 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
       row.style.setProperty('--c', t.color);
       row.innerHTML = '<span class="box"></span><span class="grow">' + t.label + '</span><span class="count">' + counts[t.id] + '</span>';
       row.onclick = () => setProtType(t.id, hiddenTypes.has(t.id));
+      makeButton(row);
       box.appendChild(row);
     });
   });
@@ -327,6 +337,7 @@ function addSpeciesRows(list) {
     row.title = s.sname;
     row.innerHTML = '<span class="box"></span><span class="grow">' + esc(s.label) + '</span><span class="count">' + s.n + '</span>';
     row.onclick = () => setSpecies(s.sname, hiddenSpecies.has(s.sname));      // click = hide or show this species
+    makeButton(row);
     box.appendChild(row);
   });
 }
@@ -349,12 +360,15 @@ legend.onAdd = () => {
     });
   });
   div.innerHTML = html + '</div>';
+  div.querySelectorAll('.legend-item').forEach(makeButton);
+  if (window.innerWidth < 700) div.classList.add('collapsed');        // on a phone the legend starts closed so the map is visible
 
   // Clicking the legend doesn't click the map behind it.
   L.DomEvent.disableClickPropagation(div);
 
   // Minimize / expand button: hides the rows and swaps – and +.
   const btn = div.querySelector('.legend-min');
+  if (div.classList.contains('collapsed')) btn.textContent = '+';
   btn.onclick = () => {
     const c = div.classList.toggle('collapsed');
     btn.textContent = c ? '+' : '–';
@@ -455,6 +469,7 @@ function setUpSearch() {
         '<div class="small">' + num(r.p.protected_ha) + ' of ' + num(r.p.habitat_ha) + ' ha' +
         (r.p.protected_by ? ' · ' + esc(shortNames(r.p.protected_by)) : ' · not protected') + '</div>';
       li.onclick = () => showHabitat(r);
+      makeButton(li);
       list.appendChild(li);
     });
   }
@@ -491,11 +506,6 @@ L.DomEvent.disableScrollPropagation(panel);
 
 document.getElementById('info-close').onclick = () => panel.classList.remove('open');
 document.addEventListener('keydown', e => { if (e.key === 'Escape') panel.classList.remove('open'); });
-
-// The photo only appears if the file exists (see index.html), so there is never a broken picture.
-const photo = document.getElementById('info-photo');
-photo.onload = () => { document.getElementById('info-figure').hidden = false; };
-photo.src = 'images/western-chorus-frog.jpg';
 
 // Fills the "Conservation sites overlapping" section from the data: one row per species,
 // then the protected areas that overlap the most habitat sites.
