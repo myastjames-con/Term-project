@@ -59,6 +59,7 @@ const designationEnglish = {
   'Paysage humanisé': 'Humanized landscape',
   'Paysage humanisé projeté': 'Proposed humanized landscape',
   "Réserve de territoire aux fins d'aire protégée": 'Land reserve for protected-area purposes',
+  'Ordonnance d\'urgence (LEP)': 'Emergency order (Species at Risk Act)',
   'Autres mesures de conservation efficaces': 'Other effective area-based conservation measure',
   'Autres mesures de conservation efficaces (fédérale)': 'Other effective area-based conservation measure (federal)'
 };
@@ -250,7 +251,8 @@ const protTypes = [
   { id: 'wildlife', label: 'Wildlife reserves, refuges and habitats', color: '#8c6d31', test: /faune|faunique|poisson/ },
   { id: 'private',  label: 'Private and voluntary conservation',     color: '#e7298a', test: /naturelle reconnue|conservation volontaire/ },
   { id: 'land',     label: 'Landscapes and exceptional forests',     color: '#41b6c4', test: /Paysage|Écosystème forestier/ },
-  { id: 'other',    label: 'Other conservation measures',            color: '#525252', test: /Autres mesures/ },
+  { id: 'order',    label: 'Federal emergency order (Longueuil)',    color: '#000000', test: /Ordonnance d.urgence/ },
+  { id: 'other',    label: 'Other conservation measures',            color: '#969696', test: /Autres mesures/ },
   { id: 'unknown',  label: 'Other designation',                      color: '#999999', test: /./ }
 ];
 const protTypeOf = designation => protTypes.find(t => t.test.test(String(designation || ''))) || protTypes[protTypes.length - 1];
