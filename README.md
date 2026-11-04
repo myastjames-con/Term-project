@@ -92,4 +92,16 @@ Test 3. I change the pull-down to "habitat size" and click a habitat that has no
   Expected: the habitat is in the list, its popup says 0 ha protected (0%) and "Protected by: none", and there is no console error.
   Result: passed. The habitat is in the list and the popup says it is not protected. There is no console error.
 
+  ## Pre-flight report (Lab 7)
+| Check | Result | What I did |
+| --- | --- | --- |
+| 1. Cold start | pass / fault: ... | fixed in commit "..." / known issue |
+| 2. Read every label | ... | ... |
+| 3. Ask twice | ... | ... |
+| 4. The edge | ... | ... |
+| 5. The data does not come | ... | ... |
+| 6. On a phone (size view and my phone) | ... | ... |
+| 7. Mouse in my pocket | ... | ... |
+| 8. Accessibility audit | ... | ... |
+
 © 2026 Mya St-James. All rights reserved.
