@@ -76,17 +76,20 @@ The topic, the scope decisions, the story on the page and the final checks were 
 At my demo, I didn't have all my amphibina data in I only had Western Chorus forgs.
 Today I will make my second layer (protected areas) coloured by which year they were established so that it answer the question of which one has been there the longest. 
 
-## A3 feature: [a short name]
-For A3 I will add a way to show which habitats are the most protected, so that my reader can see the percentage and hectars of a habitat inside a conservation zone.
-It has depth because it (computes / responds / brings in) responds to which habitats are not protected at all and their sizes.
-I will know it works when I can see all the sizes and percentages of the habitats and conservations zones.
-My edge case is if they insert something other than a specie or conservation site, it will not work. If they put a city name, it will not find anything. 
+## A3 feature: Habitats ranked by protection
+For A3 I will add a ranking list with a pull-down, so that my reader can see which habitats have the most protected area, in hectares and as a percentage.
+It has depth because it computes: the notebook measures each habitat's area and the part of it inside a conservation zone, and the list sorts habitats by those numbers.
+I will know it works when the list shows the habitats in the right order for each of the three options and clicking one shows its sizes.
+My edge case is a habitat that is not protected at all. It should not be in the "% protected" or "hectares protected" lists, but it should still be in the list ranked by habitat size.
 
-Test 1. I Press a habitat site to see how big it is. 
-  Expected: In the pop up, it says how big it is in hectars. 
-Test 2. I Pressed a habitat within a conservation site.
-  Expected: It gives me the hectars of the full habitat, the hectars inside the conservation zone and the percentage of the habitat that is protected.
-Test 3. I there is so many little habitats that on th eleft it only shows 100% protection sites.
-  Expected: [a message the reader understands; no console error].
+Test 1. I open the page and look at the list, which is ranked by % of the habitat protected.
+  Expected: the list shows the most protected habitats first, each with its percentage and its hectares protected out of its habitat size, from the highest percentage to the lowest.
+  Result: passed. The habitats are listed from the highest percentage to the lowest.
+Test 2. I change the pull-down to "hectares protected", and then I click a habitat in the list.
+  Expected: the list re-sorts with the most hectares protected first. The map zooms to the habitat I clicked and its popup gives the hectares of the habitat, the hectares protected, the percentage and the protecting area. If I click a different habitat next, the yellow outline moves to the new one and the first answer is replaced.
+  Result: passed. The list re-sorts by hectares protected, biggest first. When I click a habitat, the map zooms to it, opens the popup and outlines it in yellow so I can see exactly where it is.
+Test 3. I change the pull-down to "habitat size" and click a habitat that has no protection.
+  Expected: the habitat is in the list, its popup says 0 ha protected (0%) and "Protected by: none", and there is no console error.
+  Result: passed. The habitat is in the list and the popup says it is not protected. There is no console error.
 
 © 2026 Mya St-James. All rights reserved.
