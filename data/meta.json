@@ -5,11 +5,11 @@
  "amphibian_records": 155,
  "species": 1,
  "protected_records": 25,
- "protected_areas": 4547,
- "overlap_pieces": 38,
+ "protected_areas": 4548,
+ "overlap_pieces": 39,
  "sizes_mb": {
   "amphibians": 0.15,
   "protected_areas": 8.12,
-  "overlap": 0.02
+  "overlap": 0.03
  }
 }
