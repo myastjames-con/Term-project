@@ -145,3 +145,18 @@ table.mini th:not(:first-child), table.mini td:not(:first-child) { text-align: r
 .refs { list-style: none; padding-left: 0; }
 .refs li { padding-left: 2em; text-indent: -2em; margin-bottom: 10px; }
 .toolbar-title { flex: 1; font-weight: 600; padding-left: 4px; }
+
+/* keyboard: a clear outline on whatever has focus */
+.chip:focus-visible, .legend-item:focus-visible, #results-list li:focus-visible,
+button:focus-visible, select:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
+#results-list li:focus-visible { background: #eef3ea; }
+
+/* phone: smaller controls so the map stays visible */
+@media (max-width: 700px) {
+  #topbar { padding: 6px 10px 4px; }
+  .bar-title { font-size: 16px; }
+  .toolbar { width: 280px; }
+  #results-list { max-height: 130px; }
+  .legend { max-width: 240px; max-height: 45vh; }
+  #info-panel { width: 100%; max-width: 100%; }
+}
