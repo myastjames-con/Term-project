@@ -95,12 +95,12 @@ Test 3. I change the pull-down to "habitat size" and click a habitat that has no
   ## Pre-flight report (Lab 7)
 | Check | Result | What I did |
 | --- | --- | --- |
-| 1. Cold start | pass / fault: ... | fixed in commit "..." / known issue |
-| 2. Read every label | ... | ... |
-| 3. Ask twice | ... | ... |
-| 4. The edge | ... | ... |
-| 5. The data does not come | ... | ... |
-| 6. On a phone (size view and my phone) | ... | ... |
+| 1. Cold start |fault: red 404 in the console from a missing frog photo | fixed in commit "Fix: no 404 for the missing frog photo" |
+| 2. Read every label | pass: no undefined, null or NaN in popups, list, legend or header | none needed |
+| 3. Ask twice | fault: after picking from the list, clicking a habitat on the map left the old one outlined in yellow | fixed in commit "Fix: yellow outline stays on old answer after a map click" |
+| 4. The edge | pass: unprotected habitat shows 0 ha and "Protected by: none"; clicking empty map and a tiny habitat gave no errors | none needed |
+| 5. The data does not come | fault: if the habitat file failed to load, the page showed a developer message ("Open this page with Live Server") | fixed in commit "Fix: keyboard access, phone layout, plain-language error": the reader now sees a plain sentence and the page still works |
+
 | 7. Mouse in my pocket | ... | ... |
 | 8. Accessibility audit | ... | ... |
 

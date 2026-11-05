@@ -61,7 +61,20 @@ const designationEnglish = {
   "Réserve de territoire aux fins d'aire protégée": 'Land reserve for protected-area purposes',
   'Ordonnance d\'urgence (LEP)': 'Emergency order (Species at Risk Act)',
   'Autres mesures de conservation efficaces': 'Other effective area-based conservation measure',
-  'Autres mesures de conservation efficaces (fédérale)': 'Other effective area-based conservation measure (federal)'
+  'Autres mesures de conservation efficaces (fédérale)': 'Other effective area-based conservation measure (federal)',
+  'Refuge biologique': 'Biological refuge',
+  'Forêt ancienne': 'Old-growth forest',
+  'Forêt rare': 'Rare forest',
+  'Forêt refuge': 'Refuge forest',
+  'Aire de confinement du cerf de Virginie': 'White-tailed deer yard',
+  "Habitat d'une espèce faunique menacée ou vulnérable": 'Habitat of a threatened or vulnerable wildlife species',
+  'Territoire mis en réserve': 'Land set aside as a reserve',
+  'Vasière': 'Tidal mudflat',
+  'Réserve de parc national du Québec': 'National park reserve (Québec)',
+  'Réserve de parc national du Canada': 'National park reserve (Canada)',
+  'Parc de la Commission de la capitale nationale (Canada)': 'National Capital Commission park (Canada)',
+  'Parc marin du Saguenay - Saint-Laurent': 'Saguenay–St. Lawrence Marine Park',
+  'Réserve marine': 'Marine reserve'
 };
 // Looks a value up in a table. Curly apostrophes count as straight ones.
 const inEnglish = (table, value) => table[value] || table[String(value).replace(/’/g, "'")] || value || 'Unknown';
@@ -249,18 +262,21 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
 // 7. LAYER 2: Conservation areas (middle)
 // Popup text when you click a protected area: name, type, creation date.
 const protPopup = p => '<b>' + esc(p.NOM || 'Unnamed site') + '</b><br>' + esc(inEnglish(designationEnglish, p.DESIGNOM)) +
+                       '<br>Group: ' + esc(protTypeOf(p.DESIGNOM).label) +
                        '<br>Created: ' + esc((p.DA_CREATIO || 'n/a').slice(0, 10));
 
 // PROTECTED AREA TYPES. Each designation in the data (national park, ecological reserve, ...) is put in one
 // group, and each group has its own colour. The legend reads this same list, so legend and map match.
 // To change a group, edit its 'test' (a word found in the French designation) or its colour.
+// The groups are checked from the top, and a designation goes in the FIRST group it matches.
+// They sort the registry by who protects the land: species-at-risk habitat, the federal government,
+// Québec, or private owners. They are my reading of the designation names (see the README).
 const protTypes = [
-  { id: 'parks',    label: 'National and regional parks',            color: '#a50f15', test: /^Parc |Réserve de parc/ },
-  { id: 'reserves', label: 'Ecological, biodiversity and aquatic reserves', color: '#238b45', test: /Réserve (écologique|de biodiversité|aquatique)|territoire/ },
-  { id: 'wildlife', label: 'Wildlife reserves, refuges and habitats', color: '#8c6d31', test: /faune|faunique|poisson/ },
+  { id: 'species',  label: 'Threatened-species habitat (incl. Longueuil emergency order)', color: '#000000', test: /Ordonnance d.urgence|espèce faunique menacée/ },
+  { id: 'federal',  label: 'Federal parks, reserves and measures',   color: '#a50f15', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
   { id: 'private',  label: 'Private and voluntary conservation',     color: '#e7298a', test: /naturelle reconnue|conservation volontaire/ },
-  { id: 'land',     label: 'Landscapes and exceptional forests',     color: '#41b6c4', test: /Paysage|Écosystème forestier/ },
-  { id: 'order',    label: 'Federal emergency order (Longueuil)',    color: '#000000', test: /Ordonnance d.urgence/ },
+  { id: 'provincial', label: 'Québec parks and reserves',            color: '#238b45', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
+  { id: 'refuges',  label: 'Québec forest and wildlife refuges',     color: '#8c6d31', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
   { id: 'other',    label: 'Other conservation measures',            color: '#969696', test: /Autres mesures/ },
   { id: 'unknown',  label: 'Other designation',                      color: '#999999', test: /./ }
 ];
