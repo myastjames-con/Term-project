@@ -160,3 +160,8 @@ button:focus-visible, select:focus-visible { outline: 3px solid #1a5fb4; outline
   .legend { max-width: 240px; max-height: 45vh; }
   #info-panel { width: 100%; max-width: 100%; }
 }
+
+/* summary numbers in the top bar */
+#status { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; }
+.stat { font-size: 13px; color: var(--muted); }
+.stat b { font-size: 17px; color: var(--accent); }

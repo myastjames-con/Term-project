@@ -124,13 +124,14 @@ const provLevels = [
 ];
 
 // Which filters are on (null = no filter). The habitat shows a shape only if it passes all of them.
-const filters = { prov: null };
+const filters = { prov: null, unprot: null };
 let allHabitat = [];                       // every habitat shape, shown or not
 function refreshHabitat() {
   allHabitat.forEach(l => {
     const p = l.feature.properties;
     const show = !hiddenSpecies.has(p.SNAME) &&
-                 (!filters.prov || p.LOIEMV === filters.prov);
+                 (!filters.prov || p.LOIEMV === filters.prov) &&
+                 (!filters.unprot || !p.is_protected);
     if (show && !groups.habitat.hasLayer(l)) groups.habitat.addLayer(l);
     if (!show && groups.habitat.hasLayer(l)) groups.habitat.removeLayer(l);
   });
@@ -138,26 +139,42 @@ function refreshHabitat() {
     el.classList.toggle('on', filters[el.dataset.kind] === el.dataset.code));
 }
 
-// The clickable chips across the top. Click a chip to show only that level, click it again to clear.
+// The clickable chips across the top. Click a chip to show only that group, click it again to clear.
+// The Québec status chips only appear when the data has more than one level (with one species there is just one).
+// The "no protection" chip shows only the habitat that no protected area covers: where a new site would help most.
 function buildFilterBar(sites) {
   const bar = document.getElementById('filter-bar');
   const count = code => sites.filter(f => f.properties.LOIEMV === code).length;
-  const lab = document.createElement('span');
-  lab.className = 'chip-label'; lab.textContent = 'Québec status:'; lab.title = 'Status under Québec law (from the data)';
-  bar.appendChild(lab);
-  provLevels.filter(lv => count(lv.code) > 0).forEach(lv => {        // only the levels in the data
-    const n = count(lv.code);
+  const levels = provLevels.filter(lv => count(lv.code) > 0);          // only the levels in the data
+  if (levels.length > 1) {
+    const lab = document.createElement('span');
+    lab.className = 'chip-label'; lab.textContent = 'Québec status:'; lab.title = 'Status under Québec law (from the data)';
+    bar.appendChild(lab);
+    levels.forEach(lv => {
+      const n = count(lv.code);
+      const el = document.createElement('span');
+      el.className = 'chip';
+      el.dataset.kind = 'prov'; el.dataset.code = lv.code;
+      el.style.setProperty('--c', lv.color);
+      el.title = n + ' habitat sites. Click to show only these, click again to show all.';
+      el.innerHTML = '<span class="sw"></span>' + lv.label + ' <span class="n">' + n + '</span>';
+      el.onclick = () => { filters.prov = filters.prov === lv.code ? null : lv.code; refreshHabitat(); };
+      makeButton(el);
+      bar.appendChild(el);
+    });
+  }
+  const nUn = sites.filter(f => !f.properties.is_protected).length;
+  if (nUn > 0) {
     const el = document.createElement('span');
     el.className = 'chip';
-    el.dataset.kind = 'prov'; el.dataset.code = lv.code;
-    el.style.setProperty('--c', lv.color);
-    el.title = n + ' habitat sites. Click to show only these, click again to show all.';
-    el.innerHTML = '<span class="sw"></span>' + lv.label + ' <span class="n">' + n + '</span>';
-    el.onclick = () => { filters.prov = filters.prov === lv.code ? null : lv.code; refreshHabitat(); };
+    el.dataset.kind = 'unprot'; el.dataset.code = 'yes';
+    el.style.setProperty('--c', '#c2410c');
+    el.title = 'Show only the habitat that no protected area covers. Click again to show all.';
+    el.innerHTML = '<span class="sw"></span>Show only habitat with no protection <span class="n">' + nUn + '</span>';
+    el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; refreshHabitat(); };
     makeButton(el);
     bar.appendChild(el);
-  });
-  document.getElementById('filter-note').textContent = 'Click a status to show only those habitats.';
+  }
   map.invalidateSize();                      // the bar changed height, so tell the map
 }
 
@@ -222,16 +239,22 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
     const sites = data.features;
     const nProtected = sites.filter(f => f.properties.is_protected).length;     // sites that overlap a protected area
     const nSpecies = new Set(sites.map(f => f.properties.SNAME)).size;
-    const headline = sites.length + ' recorded amphibian habitat sites (' + nSpecies + ' species). ' +
-                     nProtected + ' of them overlap a protected area.';
+    const sumHa = k => sites.reduce((t, f) => t + (f.properties[k] || 0), 0);
+    const pctArea = sumHa('habitat_ha') > 0 ? 100 * sumHa('protected_ha') / sumHa('habitat_ha') : 0;
 
-    // meta.json (written by the notebook) says whether the map covers all of Québec or only Montérégie.
+    // meta.json (written by the notebook) says which protected areas the map shows.
     fetch('../data/meta.json').then(r => r.json()).catch(() => ({})).then(meta => {
-      const where = meta.scope === 'monteregie' ? ' Area shown: Montérégie only.' :
-                    meta.scope === 'quebec' ? ' Area shown: all of Québec.' : '';
-      document.getElementById('status').textContent = headline + where;
+      const stat = (n, text) => '<span class="stat"><b>' + n + '</b> ' + text + '</span>';
+      document.getElementById('status').innerHTML =
+        stat(sites.length, 'recorded habitat sites' + (nSpecies > 1 ? ' (' + nSpecies + ' species)' : '')) +
+        stat(nProtected, 'overlap a protected area') +
+        stat(num(pctArea, 1) + '%', 'of the habitat area is protected');
+      const where = meta.protected_scope === 'near' ? 'Protected areas shown: those within ' + meta.protected_near_km + ' km of a habitat.' :
+                    meta.scope === 'monteregie' ? 'Area shown: Montérégie only.' : '';
+      document.getElementById('filter-note').textContent = where;
       const note = document.getElementById('scope-note');
-      if (note) note.textContent = where ? where.replace(' Area shown: ', '').replace('.', '') : 'see the notebook';
+      if (note) note.textContent = meta.protected_scope === 'near' ? ' the recorded habitat (Outaouais and Montérégie), with the protected areas within ' + meta.protected_near_km + ' km of it' :
+                                   meta.scope === 'monteregie' ? ' Montérégie only' : ' see the notebook';
     });
 
     // Give each species a colour (most records first) and colour its shapes with it.
@@ -505,7 +528,7 @@ function setUpSearch() {
   function showHabitat(r) {
     if (!map.hasLayer(groups.habitat)) map.addLayer(groups.habitat);
     // in case the legend or a chip hid this habitat, show it again
-    if (!groups.habitat.hasLayer(r.layer)) { hiddenSpecies.delete(r.p.SNAME); filters.prov = null; refreshHabitat(); }
+    if (!groups.habitat.hasLayer(r.layer)) { hiddenSpecies.delete(r.p.SNAME); filters.prov = null; filters.unprot = null; refreshHabitat(); }
     document.querySelectorAll('.legend-item[data-species]').forEach(el => el.classList.toggle('off', hiddenSpecies.has(el.dataset.species)));
     clearHighlight();
     highlight = L.geoJSON(r.layer.feature, {
