@@ -249,12 +249,13 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
         stat(sites.length, 'recorded habitat sites' + (nSpecies > 1 ? ' (' + nSpecies + ' species)' : '')) +
         stat(nProtected, 'overlap a protected area') +
         stat(num(pctArea, 1) + '%', 'of the habitat area is protected');
-      const where = meta.protected_scope === 'near' ? 'Protected areas shown: those within ' + meta.protected_near_km + ' km of a habitat.' :
-                    meta.scope === 'monteregie' ? 'Area shown: Montérégie only.' : '';
+      const regions = (meta.regions || []).join(' and ');
+      const where = (regions ? 'Area shown: ' + regions + '. ' : '') +
+                    (meta.protected_scope === 'near' ? 'Protected areas shown: those within ' + meta.protected_near_km + ' km of a habitat.' : '');
       document.getElementById('filter-note').textContent = where;
       const note = document.getElementById('scope-note');
-      if (note) note.textContent = meta.protected_scope === 'near' ? ' the recorded habitat (Outaouais and Montérégie), with the protected areas within ' + meta.protected_near_km + ' km of it' :
-                                   meta.scope === 'monteregie' ? ' Montérégie only' : ' see the notebook';
+      if (note) note.textContent = ' ' + (regions || 'see the notebook') + ' (Québec administrative regions)' +
+                                   (meta.protected_scope === 'near' ? ', with the protected areas within ' + meta.protected_near_km + ' km of a habitat' : '');
     });
 
     // Give each species a colour (most records first) and colour its shapes with it.
