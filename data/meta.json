@@ -1,15 +1,20 @@
 {
  "scope": "quebec",
- "protected_scope": "all",
+ "protected_scope": "near",
+ "protected_near_km": 10,
+ "regions": [
+  "Mont\u00e9r\u00e9gie",
+  "Outaouais"
+ ],
  "simplify_degrees": 0.0005,
  "amphibian_records": 155,
  "species": 1,
  "protected_records": 25,
- "protected_areas": 4548,
+ "protected_areas": 119,
  "overlap_pieces": 39,
  "sizes_mb": {
   "amphibians": 0.15,
-  "protected_areas": 8.12,
+  "protected_areas": 0.1,
   "overlap": 0.03
  }
 }
