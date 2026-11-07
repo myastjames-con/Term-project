@@ -191,3 +191,22 @@ button:focus-visible, select:focus-visible { outline: 3px solid #1a5fb4; outline
 /* info panel: group headings and the species colour dots */
 #info-panel h3.grp { margin: 18px 0 4px; font-size: 17px; color: var(--accent); }
 #info-panel summary .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: #999; border: 1px solid rgba(0,0,0,.3); }
+
+/* ---- readability update: legend note, panel tabs, ratings table ---- */
+.legend-note { font-size: 12px; color: #444; margin: 4px 0 2px; line-height: 1.35; }
+.ring-eg { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #888; border: 3px solid #1b5e20; vertical-align: -3px; }
+.tabs { display: flex; gap: 4px; margin: 8px 0 10px; border-bottom: 2px solid #ddd; position: sticky; top: 0; background: #fff; z-index: 2; }
+.tab { flex: 1; font: inherit; font-size: 14px; font-weight: 600; padding: 8px 4px; border: 0; background: none; color: #555; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tab:hover { color: #000; }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:focus-visible { outline: 3px solid #ffb000; outline-offset: 1px; }
+.tabpane { display: none; }
+.tabpane.on { display: block; }
+#info-panel details > summary .dot { vertical-align: middle; }
+table.glance { font-size: 12px; }
+table.glance th, table.glance td { padding: 4px 3px; }
+table.glance td[class^="r-"] { font-weight: 600; text-align: center; }
+.r-end { background: #fcd5d1; color: #7f1d1d; }
+.r-thr { background: #fde0c5; color: #7c2d12; }
+.r-vul { background: #fdf0b8; color: #6b4e00; }
+.r-ok  { background: #e3efe0; color: #1f4d2b; }

@@ -23,7 +23,24 @@
     <button id="info-close" aria-label="Close the panel">×</button>
 
     <h2>Amphibians at risk</h2>
-    <p>Three amphibians are on this map, one colour each in the legend. Each one has a legal status in Québec, and the habitats are ranked by how much of their area is protected.</p>
+    <div class="tabs" role="tablist" aria-label="Panel sections">
+      <button type="button" role="tab" class="tab on" data-tab="species" aria-selected="true">Species</button>
+      <button type="button" role="tab" class="tab" data-tab="ratings" aria-selected="false">Ratings</button>
+      <button type="button" role="tab" class="tab" data-tab="results" aria-selected="false">Results</button>
+      <button type="button" role="tab" class="tab" data-tab="sources" aria-selected="false">Sources</button>
+    </div>
+
+    <section class="tabpane on" id="tab-species" role="tabpanel">
+    <p>Three amphibians are on this map, one colour each. Each has a legal status in Québec. Click a species below to read about it.</p>
+
+    <h3 class="grp">Ratings at a glance</h3>
+    <table class="mini glance">
+      <tr><th>Species</th><th>Québec</th><th>COSEWIC</th><th>SARA</th><th>IUCN</th></tr>
+      <tr><td><span class="dot" data-sp="Pseudacris triseriata"></span>Western chorus frog</td><td class="r-thr">Threatened</td><td class="r-thr">Threatened 2008</td><td class="r-thr">Threatened</td><td class="r-ok">Least concern</td></tr>
+      <tr><td><span class="dot" data-sp="Gyrinophilus porphyriticus"></span>Northern spring salamander</td><td class="r-vul">Vulnerable</td><td class="r-thr">Threatened 2011</td><td class="r-thr">Threatened 2017</td><td class="r-ok">Least concern</td></tr>
+      <tr><td><span class="dot" data-sp="Desmognathus ochrophaeus"></span>Allegheny Mountain dusky salamander</td><td class="r-thr">Threatened</td><td class="r-end">Endangered 2018</td><td class="r-end">Endangered 2021</td><td class="r-ok">Least concern</td></tr>
+    </table>
+    <p class="small">Tap the Ratings tab to see who each of these four systems is and how it measures.</p>
 
     <h3 class="grp">The three species</h3>
 
@@ -52,6 +69,9 @@
       <p class="small"><b>Status:</b> Québec threatened · COSEWIC endangered (2018) · SARA endangered (2021) · IUCN least concern</p>
     </details>
 
+    </section>
+
+    <section class="tabpane" id="tab-ratings" role="tabpanel">
     <h3 class="grp">Four ways to say a species is at risk</h3>
     <p class="small">The four systems below do not measure the same thing, so one species can have four different labels. Québec looks at Québec, COSEWIC and SARA look at Canada, and the IUCN looks at the whole world.</p>
 
@@ -87,21 +107,34 @@
       <p><b>Our species.</b> All three are rated Least Concern. Their populations are rare in Québec, but the species are widespread elsewhere. The Western chorus frog was assessed in 2022. I took the other ratings from Wikipedia, which cites the IUCN, because the IUCN website did not open for me, so check them on <a href="https://www.iucnredlist.org/">iucnredlist.org</a>.</p>
     </details>
 
-    <details>
-      <summary>Conservation sites overlapping</summary>
+    </section>
+
+    <section class="tabpane" id="tab-results" role="tabpanel">
+    <h3 class="grp">Conservation sites overlapping</h3>
+    <details open>
+      <summary>Numbers for each species</summary>
       <p class="small">All amphibians on the map. Sites = recorded habitat sites. Area protected = the share of all that habitat that lies inside a protected area.</p>
       <div id="panel-overlap"></div>
     </details>
 
     <details>
-      <summary>Sources and references</summary>
+      <summary>How the percentage is measured</summary>
+      <p>For each recorded habitat, the notebook measures the habitat's area in hectares and the part of it inside a protected area, then divides. Where protected areas overlap each other the area is counted once. Overlaps under 100 square metres are ignored as map slivers.</p>
+      <p>The habitat shapes are the mapped areas of each recorded occurrence, not a survey of every place the species lives.</p>
+    </details>
+    </section>
+
+    <section class="tabpane" id="tab-sources" role="tabpanel">
+    <h3 class="grp">Sources and references</h3>
+    <details open>
+      <summary>Data, basemaps and references</summary>
       <h3>Where the data comes from</h3>
         <ul>
   <li><a href="https://www.donneesquebec.ca/recherche/dataset/occurrences-especes-en-situation-precaire">Occurrences d’espèces en situation précaire</a>, CDPNQ, MELCCFP, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Kept three amphibians at their Québec legal status: the Western chorus frog and the Allegheny Mountain dusky salamander (threatened) and the Northern spring salamander (vulnerable). Area shown on the map:<span id="scope-note"> see the notebook</span>.</li>
   <li><a href="https://www.donneesquebec.ca/recherche/dataset/aires-protegees-au-quebec">Registre des aires protégées et des AMCE au Québec</a>, MELCCFP, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Removed plant, bird, muskrat and heron habitat designations, and kept the others, then added the Emergency Order lots in Longueuil (Canada Gazette, SOR/2021-231). The legend groups the areas by who protects them (federal, Québec, private, threatened-species habitat); that grouping is my reading of the designation names. Shapes are simplified slightly so the page loads quickly.</li>
   <li><a href="https://www.donneesquebec.ca/recherche/dataset/decoupages-administratifs">Découpages administratifs</a>, Ministère des Ressources naturelles et des Forêts, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Used for the boundaries of the regions the map covers.</li>
   <li>Species status information from the sources listed under References.</li>
-  <li>Basemaps © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions">CARTO</a> (light map), and Esri, Maxar, Earthstar Geographics (satellite).</li>
+  <li>Basemaps: light map Esri, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors; street map © OpenStreetMap contributors; satellite Esri, Maxar, Earthstar Geographics.</li>
 </ul>
       <h3>References</h3>
         <ul class="refs">
@@ -122,11 +155,7 @@
 </ul>
     </details>
 
-    <details>
-      <summary>How the percentage is measured</summary>
-      <p>For each recorded habitat, the notebook measures the habitat's area in hectares and the part of it inside a protected area, then divides. Where protected areas overlap each other the area is counted once. Overlaps under 100 square metres are ignored as map slivers.</p>
-      <p>The habitat shapes are the mapped areas of each recorded occurrence, not a survey of every place the species lives.</p>
-    </details>
+    </section>
   </aside>
 
 

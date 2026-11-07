@@ -12,9 +12,11 @@ L.control.zoom({ position: 'topright' }).addTo(map);
 // The attribution text (bottom right) is required by the licences.
 const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const baseMaps = {
-  'Light map (easiest to read)': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd', maxZoom: 19,
-    attribution: osmAttr + ' &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  // Esri's light grey map needs no key (the CARTO one now asks for an API key). It stops at zoom 16;
+  // past that Leaflet stretches the last tiles instead of showing blanks.
+  'Light map (easiest to read)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    maxNativeZoom: 16, maxZoom: 19,
+    attribution: 'Tiles &copy; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
   }),
   'Street map (OpenStreetMap)': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19, attribution: osmAttr
@@ -35,6 +37,7 @@ L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 map.createPane('habitatPane');   map.getPane('habitatPane').style.zIndex = 400;
 map.createPane('protectedPane'); map.getPane('protectedPane').style.zIndex = 450;
 map.createPane('overlapPane');   map.getPane('overlapPane').style.zIndex = 500;
+map.createPane('dotPane');       map.getPane('dotPane').style.zIndex = 600;     // the dots (section 4) sit above everything
 
 
 // 4. SETTINGS FOR THE LAYERS
@@ -123,8 +126,9 @@ const styles = {
 // so the legend and the map can never disagree. The species are given colours from this list in order
 // (the species with the most records gets the first colour). The list has no greens or reds, so the
 // habitat does not look like the protected areas (reds and greens) or the overlap (dark green).
-const palette = ['#1f78b4', '#ff7f00', '#6a3d9a', '#e6ab02', '#17becf', '#e377c2',
-                 '#8c564b', '#7f7f7f', '#bcbd22', '#aec7e8', '#ffbb78', '#c5b0d5'];
+// These are colour-blind-safe colours (Okabe and Ito) that stay apart from each other. The protected
+// areas use greens, black and grey only, so no species colour can be mistaken for a protected area.
+const palette = ['#0072b2', '#d55e00', '#cc79a7', '#e69f00', '#56b4e9', '#7a4fa3'];
 const speciesColour = {};        // filled in when the data loads: { 'Pseudacris triseriata': '#1f78b4', ... }
 const colourFor = sname => speciesColour[sname] || '#999999';
 
@@ -139,6 +143,37 @@ const provLevels = [
 // Which filters are on (null = no filter). The habitat shows a shape only if it passes all of them.
 const filters = { prov: null, unprot: null };
 let allHabitat = [];                       // every habitat shape, shown or not
+
+// DOTS. Many habitats are tiny, so zoomed out their shapes are almost invisible. Each habitat also gets a dot
+// at its centre while the map is zoomed out (zoom 12 or less). The dot is in the species colour. A dark-green
+// ring means the habitat overlaps a protected area, a white ring means it does not. A dot opens the same popup.
+const DOT_MAX_ZOOM = 12;
+const dotGroup = L.layerGroup();
+const dotOf = new Map();                   // habitat shape -> its dot
+function makeDots() {
+  allHabitat.forEach(l => {
+    const p = l.feature.properties;
+    const dot = L.circleMarker(l.getBounds().getCenter(), {
+      pane: 'dotPane', radius: 7, weight: p.is_protected ? 3 : 2, color: p.is_protected ? '#1b5e20' : '#ffffff',
+      fillColor: colourFor(p.SNAME), fillOpacity: 1
+    });
+    dot.on('click', () => l.openPopup(dot.getLatLng()));
+    dotOf.set(l, dot);
+  });
+}
+function syncDots() {
+  const zoomedOut = map.getZoom() <= DOT_MAX_ZOOM;
+  allHabitat.forEach(l => {
+    const dot = dotOf.get(l);
+    if (!dot) return;
+    const want = zoomedOut && groups.habitat.hasLayer(l);
+    if (want && !dotGroup.hasLayer(dot)) dotGroup.addLayer(dot);
+    if (!want && dotGroup.hasLayer(dot)) dotGroup.removeLayer(dot);
+  });
+}
+map.on('zoomend', syncDots);
+dotGroup.addTo(map);
+
 function refreshHabitat() {
   allHabitat.forEach(l => {
     const p = l.feature.properties;
@@ -148,6 +183,7 @@ function refreshHabitat() {
     if (show && !groups.habitat.hasLayer(l)) groups.habitat.addLayer(l);
     if (!show && groups.habitat.hasLayer(l)) groups.habitat.removeLayer(l);
   });
+  syncDots();
   document.querySelectorAll('.chip[data-kind]').forEach(el =>
     el.classList.toggle('on', filters[el.dataset.kind] === el.dataset.code));
 }
@@ -168,7 +204,7 @@ function buildFilterBar(sites) {
       const el = document.createElement('span');
       el.className = 'chip';
       el.dataset.kind = 'prov'; el.dataset.code = lv.code;
-      el.style.setProperty('--c', lv.color);
+      el.style.setProperty('--c', '#555');
       el.title = n + ' habitat sites. Click to show only these, click again to show all.';
       el.innerHTML = '<span class="sw"></span>' + lv.label + ' <span class="n">' + n + '</span>';
       el.onclick = () => { filters.prov = filters.prov === lv.code ? null : lv.code; refreshHabitat(); };
@@ -181,7 +217,7 @@ function buildFilterBar(sites) {
     const el = document.createElement('span');
     el.className = 'chip';
     el.dataset.kind = 'unprot'; el.dataset.code = 'yes';
-    el.style.setProperty('--c', '#c2410c');
+    el.style.setProperty('--c', '#555');
     el.title = 'Show only the habitat that no protected area covers. Click again to show all.';
     el.innerHTML = '<span class="sw"></span>Show only habitat with no protection <span class="n">' + nUn + '</span>';
     el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; setFocus(!!filters.unprot); refreshHabitat(); };
@@ -293,10 +329,11 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
     speciesList.forEach((sname, i) => { speciesColour[sname] = palette[i % palette.length]; });
     groups.habitat.options.style = f => {
       const c = colourFor(f.properties.SNAME);
-      return { ...styles.habitat, color: c, fillColor: c, weight: 1.5, fillOpacity: 0.45 };
+      return { ...styles.habitat, color: c, fillColor: c, weight: 2.5, fillOpacity: 0.6 };
     };
     groups.habitat.setStyle(groups.habitat.options.style);
     allHabitat = groups.habitat.getLayers();
+    makeDots();
     buildFilterBar(sites);
     groups.habitat.eachLayer(l => { (speciesLayers[l.feature.properties.SNAME] = speciesLayers[l.feature.properties.SNAME] || []).push(l); });
 
@@ -308,6 +345,7 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
     setUpSearch();                                       // section 10
     fillPanel(sites);                                    // section 11
     map.fitBounds(groups.habitat.getBounds(), { padding: [30, 30] });           // zoom to the data
+    syncDots();
     addRegionButtons();
   });
 
@@ -326,12 +364,12 @@ const protPopup = p => '<b>' + esc(p.NOM || 'Unnamed site') + '</b><br>' + esc(i
 // Québec, or private owners. They are my reading of the designation names (see the README).
 const protTypes = [
   { id: 'species',  label: 'Threatened-species habitat (incl. Longueuil emergency order)', color: '#000000', test: /Ordonnance d.urgence|espèce faunique menacée/ },
-  { id: 'federal',  label: 'Federal parks, reserves and measures',   color: '#a50f15', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
-  { id: 'private',  label: 'Private and voluntary conservation',     color: '#e7298a', test: /naturelle reconnue|conservation volontaire/ },
-  { id: 'provincial', label: 'Québec parks and reserves',            color: '#6a3d9a', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
-  { id: 'refuges',  label: 'Québec forest and wildlife refuges',     color: '#8c6d31', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
-  { id: 'other',    label: 'Other conservation measures',            color: '#969696', test: /Autres mesures/ },
-  { id: 'unknown',  label: 'Other designation',                      color: '#999999', test: /./ }
+  { id: 'federal',  label: 'Federal parks, reserves and measures',   color: '#1b7837', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
+  { id: 'provincial', label: 'Québec parks and reserves',            color: '#5aae61', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
+  { id: 'refuges',  label: 'Québec forest and wildlife refuges',     color: '#a6dba0', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
+  { id: 'private',  label: 'Private and voluntary conservation',     color: '#d9f0d3', test: /naturelle reconnue|conservation volontaire/ },
+  { id: 'other',    label: 'Other conservation measures',            color: '#bdbdbd', test: /Autres mesures/ },
+  { id: 'unknown',  label: 'Other designation',                      color: '#bdbdbd', test: /./ }
 ];
 const protTypeOf = designation => protTypes.find(t => t.test.test(String(designation || ''))) || protTypes[protTypes.length - 1];
 const protLayers = {};                 // shapes of each type, so a legend row can show or hide a type
@@ -345,8 +383,10 @@ function setProtType(id, on) {
 addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles.protected, protPopup, undefined,
   data => {
     groups.protected.options.style = f => {
-      const c = protTypeOf(f.properties.DESIGNOM).color;
-      return { ...styles.protected, color: c, fillColor: c, weight: 1.5, fillOpacity: 0.35 };
+      // fill = the type's colour; the border is one dark green (black for species habitat) so pale types still show
+      const t = protTypeOf(f.properties.DESIGNOM);
+      return { ...styles.protected, color: t.id === 'species' ? '#000000' : t.id === 'other' || t.id === 'unknown' ? '#737373' : '#1b5e20',
+               fillColor: t.color, weight: 1.2, fillOpacity: 0.5 };
     };
     groups.protected.setStyle(groups.protected.options.style);
     const counts = {};
@@ -420,7 +460,8 @@ legend.onAdd = () => {
              '<button class="legend-min" title="Minimize" aria-label="Minimize legend">–</button></div>' +
              '<div class="legend-body">' +
              '<div class="legend-sub">Amphibian habitat (colour = species)</div><div id="legend-species"></div>' +
-             '<div class="legend-sub">Protected area type</div><div id="legend-protected"></div>';
+             '<div class="legend-note"><span class="ring-eg"></span> Zoomed out, each habitat is a dot. Dark-green ring = overlaps a protected area. White ring = not protected.</div>' +
+             '<div class="legend-sub">Protected area type (greens, black and grey)</div><div id="legend-protected"></div>';
   legendSections.forEach(s => {
     html += '<div class="legend-sub">' + s.title + '</div>';        // section subtitle
     s.items.forEach(i => {
@@ -621,6 +662,18 @@ map.getContainer().appendChild(panel);
 L.DomEvent.disableClickPropagation(panel);
 L.DomEvent.disableScrollPropagation(panel);
 
+// Tabs: show one section of the panel at a time.
+document.querySelectorAll('#info-panel .tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('#info-panel .tab').forEach(x => {
+      const on = x === t;
+      x.classList.toggle('on', on); x.setAttribute('aria-selected', on);
+    });
+    document.querySelectorAll('#info-panel .tabpane').forEach(p => p.classList.toggle('on', p.id === 'tab-' + t.dataset.tab));
+    panel.scrollTop = 0;
+  };
+});
+
 document.getElementById('info-close').onclick = () => panel.classList.remove('open');
 document.addEventListener('keydown', e => { if (e.key === 'Escape') panel.classList.remove('open'); });
 
@@ -652,7 +705,11 @@ function fillPanel(sites) {
   }
   document.getElementById('panel-overlap').innerHTML = html;
   // the colour dots next to the species names in the panel match the legend
-  document.querySelectorAll('#info-panel .dot[data-sp]').forEach(d => { d.style.background = colourFor(d.dataset.sp); });
+  document.querySelectorAll('#info-panel .dot[data-sp]').forEach(d => { 
+    d.style.background = colourFor(d.dataset.sp);
+    const det = d.closest('details');
+    if (det) det.style.borderLeft = '5px solid ' + colourFor(d.dataset.sp);
+  });
 }
 
 
