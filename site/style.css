@@ -212,3 +212,29 @@ table.glance td[class^="r-"] { font-weight: 600; text-align: center; }
 .r-ok  { background: #e3efe0; color: #1f4d2b; }
 
 .pchip { display: inline-block; width: 11px; height: 11px; margin-right: 5px; vertical-align: -1px; border: 1px solid #3f007d; }
+
+/* ---- top bar: title and numbers on top, filters and legend button underneath ---- */
+#topbar { position: relative; z-index: 1500; padding: 10px 16px 8px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.bar-top { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; }
+.bar-id { min-width: 220px; }
+.bar-title { display: block; font-size: 20px; letter-spacing: -.01em; }
+#filter-note { margin-top: 2px; font-size: 12px; color: var(--muted); min-height: 0; }
+#status { gap: 10px; }
+.stat { display: flex; flex-direction: column; align-items: flex-start; min-width: 96px; padding: 4px 12px; border-left: 3px solid var(--accent); background: #f4f7f2; border-radius: 0 6px 6px 0; line-height: 1.2; }
+.stat b { font-size: 20px; }
+.stat span { font-size: 12px; color: var(--muted); }
+.bar-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e5e5; flex-wrap: wrap; }
+#filter-bar { margin-top: 0; }
+#legend-btn { cursor: pointer; font: 600 13px/1.4 system-ui, sans-serif; padding: 5px 12px; border: 1px solid var(--accent); border-radius: 16px; background: #fff; color: var(--accent); }
+#legend-btn:hover, #legend-btn.on { background: var(--accent); color: #fff; }
+#legend-drop { position: absolute; right: 12px; top: 100%; margin-top: 4px; z-index: 1600; }
+#legend-drop[hidden] { display: none; }
+#legend-drop .legend { max-width: 340px; max-height: calc(100vh - 190px); background: #fff; backdrop-filter: none; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.legend-min { display: none; }
+@media (max-width: 700px) {
+  .stat { min-width: 0; padding: 3px 8px; }
+  .stat b { font-size: 16px; }
+  .bar-title { font-size: 16px; }
+  #legend-drop { left: 8px; right: 8px; }
+  #legend-drop .legend { max-width: none; max-height: 60vh; }
+}

@@ -130,7 +130,13 @@ const styles = {
 // areas use purples, black and grey only, so no species colour can be mistaken for a protected area.
 const palette = ['#0072b2', '#d55e00', '#e69f00', '#56b4e9', '#f0e442'];
 const speciesColour = {};        // filled in when the data loads: { 'Pseudacris triseriata': '#1f78b4', ... }
-const colourFor = sname => speciesColour[sname] || '#999999';
+// The data can add a suffix to the name (for example 'Desmognathus ochrophaeus pop. 2'), so a name also
+// matches a colour when one name starts with the other.
+const colourFor = sname => {
+  if (speciesColour[sname]) return speciesColour[sname];
+  const k = Object.keys(speciesColour).find(k => k.startsWith(sname) || String(sname).startsWith(k));
+  return k ? speciesColour[k] : '#999999';
+};
 
 
 // Québec's own status (LOIEMV in the data)
@@ -214,12 +220,15 @@ function buildFilterBar(sites) {
   }
   const nUn = sites.filter(f => !f.properties.is_protected).length;
   if (nUn > 0) {
+    const lab2 = document.createElement('span');
+    lab2.className = 'chip-label'; lab2.textContent = 'Focus:';
+    bar.appendChild(lab2);
     const el = document.createElement('span');
     el.className = 'chip';
     el.dataset.kind = 'unprot'; el.dataset.code = 'yes';
     el.style.setProperty('--c', '#555');
     el.title = 'Show only the habitat that no protected area covers. Click again to show all.';
-    el.innerHTML = '<span class="sw"></span>Show only habitat with no protection <span class="n">' + nUn + '</span>';
+    el.innerHTML = '<span class="sw"></span>Only habitat with no protection <span class="n">' + nUn + '</span>';
     el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; setFocus(!!filters.unprot); refreshHabitat(); };
     makeButton(el);
     bar.appendChild(el);
@@ -308,11 +317,11 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
 
     // meta.json (written by the notebook) says which protected areas the map shows.
     fetch('../data/meta.json').then(r => r.json()).catch(() => ({})).then(meta => {
-      const stat = (n, text) => '<span class="stat"><b>' + n + '</b> ' + text + '</span>';
+      const stat = (n, text) => '<span class="stat"><b>' + n + '</b><span>' + text + '</span></span>';
       document.getElementById('status').innerHTML =
-        stat(sites.length, 'recorded habitat sites' + (nSpecies > 1 ? ' (' + nSpecies + ' species)' : '')) +
+        stat(sites.length, 'habitat sites' + (nSpecies > 1 ? ', ' + nSpecies + ' species' : '')) +
         stat(nProtected, 'overlap a protected area') +
-        stat(num(pctArea, 1) + '%', 'of the habitat area is protected');
+        stat(num(pctArea, 1) + '%', 'of habitat area protected');
       const regions = (meta.regions || []).join(' and ');
       const where = (regions ? 'Area shown: ' + regions + '. ' : '') +
                     (meta.protected_scope === 'near' ? 'Protected areas shown: those within ' + meta.protected_near_km + ' km of a habitat.' : '');
@@ -458,8 +467,7 @@ legend.onAdd = () => {
   const div = L.DomUtil.create('div', 'legend');
 
   // Build the legend HTML: title + minimize button, then each section and its rows.
-  let html = '<div class="legend-head"><span class="legend-title">Click a row to switch it on or off</span>' +
-             '<button class="legend-min" title="Minimize" aria-label="Minimize legend">–</button></div>' +
+  let html = '<div class="legend-head"><span class="legend-title">Click a row to switch it on or off</span></div>' +
              '<div class="legend-body">' +
              '<div class="legend-sub">Amphibian habitat (colour = species)</div><div id="legend-species"></div>' +
              '<div class="legend-note"><span class="ring-eg"></span> Zoomed out, each habitat is a dot. Dark-purple ring = overlaps a protected area. White ring = not protected.</div>' +
@@ -473,18 +481,11 @@ legend.onAdd = () => {
   });
   div.innerHTML = html + '</div>';
   div.querySelectorAll('.legend-item').forEach(makeButton);
-  if (window.innerWidth < 700) div.classList.add('collapsed');        // on a phone the legend starts closed so the map is visible
 
   // Clicking the legend doesn't click the map behind it.
   L.DomEvent.disableClickPropagation(div);
 
   // Minimize / expand button: hides the rows and swaps – and +.
-  const btn = div.querySelector('.legend-min');
-  if (div.classList.contains('collapsed')) btn.textContent = '+';
-  btn.onclick = () => {
-    const c = div.classList.toggle('collapsed');
-    btn.textContent = c ? '+' : '–';
-  };
 
   // Clicking a row turns its layer on or off. The box goes hollow when it's off.
   div.querySelectorAll('.legend-item[data-key]').forEach(el => {
@@ -500,7 +501,18 @@ legend.onAdd = () => {
   });
   return div;
 };
-legend.addTo(map);
+// The legend lives in a drop-down under the top bar (not on the map), so it never covers the layers.
+document.getElementById('legend-drop').appendChild(legend.onAdd());
+const legendBtn = document.getElementById('legend-btn');
+const legendDrop = document.getElementById('legend-drop');
+function toggleLegend(open) {
+  legendDrop.hidden = !open;
+  legendBtn.setAttribute('aria-expanded', open);
+  legendBtn.classList.toggle('on', open);
+}
+legendBtn.onclick = () => toggleLegend(legendDrop.hidden);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleLegend(false); });
+map.on('click', () => toggleLegend(false));          // a click on the map closes it
 
 
 // Buttons to zoom to each region that has habitat (the notebook writes the region of each record).

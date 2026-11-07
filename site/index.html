@@ -10,9 +10,19 @@
 <body>
   <!-- TOP BAR: title, one status line, and the clickable filters (app.js builds the chips) -->
   <header id="topbar">
-    <div class="bar-row"><strong class="bar-title">Amphibian habitats and protected areas</strong><span id="status">Loading...</span></div>
-    <div id="filter-bar"></div>
-    <div id="filter-note"></div>
+    <div class="bar-top">
+      <div class="bar-id">
+        <strong class="bar-title">Amphibian habitats and protected areas</strong>
+        <div id="filter-note"></div>
+      </div>
+      <div id="status">Loading...</div>
+    </div>
+    <div class="bar-bottom">
+      <div id="filter-bar"></div>
+      <button type="button" id="legend-btn" aria-expanded="false" aria-controls="legend-drop">Legend and layers <span class="caret">▾</span></button>
+    </div>
+    <!-- The legend (app.js puts it here). It drops down under the bar so it never covers the map. -->
+    <div id="legend-drop" hidden></div>
   </header>
 
   <!-- THE MAP -->
