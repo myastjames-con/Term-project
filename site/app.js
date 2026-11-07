@@ -229,7 +229,8 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
        '<br>Status: ' + esc(inEnglish(statusEnglish, p.LOIEMV)) +
        '<br>Habitat size: ' + num(p.habitat_ha) + ' ha' +
        '<br>Protected: ' + num(p.protected_ha) + ' ha (' + num(p.pct_protected, 1) + '% of the habitat)' +
-       '<br>Protected by: ' + esc(p.protected_by || 'none'),
+       '<br>Protected by: ' + esc(p.protected_by || 'none') +
+       (!p.is_protected && p.nearest_name ? '<br>Nearest protected area: ' + esc(p.nearest_name) + ' (' + num(p.nearest_km, 1) + ' km away)' : ''),
 
   // No filter: all species are drawn
   undefined,
@@ -299,7 +300,7 @@ const protTypes = [
   { id: 'species',  label: 'Threatened-species habitat (incl. Longueuil emergency order)', color: '#000000', test: /Ordonnance d.urgence|espèce faunique menacée/ },
   { id: 'federal',  label: 'Federal parks, reserves and measures',   color: '#a50f15', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
   { id: 'private',  label: 'Private and voluntary conservation',     color: '#e7298a', test: /naturelle reconnue|conservation volontaire/ },
-  { id: 'provincial', label: 'Québec parks and reserves',            color: '#238b45', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
+  { id: 'provincial', label: 'Québec parks and reserves',            color: '#6a3d9a', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
   { id: 'refuges',  label: 'Québec forest and wildlife refuges',     color: '#8c6d31', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
   { id: 'other',    label: 'Other conservation measures',            color: '#969696', test: /Autres mesures/ },
   { id: 'unknown',  label: 'Other designation',                      color: '#999999', test: /./ }
@@ -317,7 +318,7 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
   data => {
     groups.protected.options.style = f => {
       const c = protTypeOf(f.properties.DESIGNOM).color;
-      return { ...styles.protected, color: c, fillColor: c, fillOpacity: 0.35 };
+      return { ...styles.protected, color: c, fillColor: c, weight: 1.5, fillOpacity: 0.35 };
     };
     groups.protected.setStyle(groups.protected.options.style);
     const counts = {};
@@ -500,6 +501,14 @@ function setUpSearch() {
     size: (a, b) => b.p.habitat_ha - a.p.habitat_ha
   };
 
+  // The list shows the top 10. The button under it shows every habitat, and back again.
+  let showAll = false;
+  const more = document.createElement('button');
+  more.type = 'button';
+  more.className = 'more-btn';
+  list.insertAdjacentElement('afterend', more);
+  more.onclick = () => { showAll = !showAll; render(); };
+
   function render() {
     let rows = records.slice();
     // Show only habitats that have some protection (unless ranking by size).
@@ -508,17 +517,21 @@ function setUpSearch() {
 
     note.textContent = rows.length === 0 ? 'No habitat to show.' :
       rows.length + (rank.value === 'size' ? ' habitats' : ' habitats have some protection') +
-      (rows.length > 10 ? ' (top 10 shown)' : '');
+      (rows.length > 10 && !showAll ? ' (top 10 shown)' : '');
+
+    more.hidden = rows.length <= 10;
+    more.textContent = showAll ? 'Show only the top 10' : 'See all ' + rows.length + ' habitats';
 
     list.innerHTML = '';
-    rows.slice(0, 10).forEach(r => {
+    rows.slice(0, showAll ? rows.length : 10).forEach(r => {
       const li = document.createElement('li');
       li.innerHTML =
         '<span class="dot" style="background:' + colourFor(r.p.SNAME) + '"></span>' +
         '<b>' + esc(r.p.GCOMNAME || r.p.SCOMNAME || r.p.SNAME) + '</b> ' +
         '<span class="pct">' + num(r.p.pct_protected, 1) + '% protected</span>' +
         '<div class="small">' + num(r.p.protected_ha) + ' of ' + num(r.p.habitat_ha) + ' ha' +
-        (r.p.protected_by ? ' · ' + esc(shortNames(r.p.protected_by)) : ' · not protected') + '</div>';
+        (r.p.protected_by ? ' · ' + esc(shortNames(r.p.protected_by)) :
+          ' · not protected' + (r.p.nearest_km != null ? ' (nearest protected area ' + num(r.p.nearest_km, 1) + ' km away)' : '')) + '</div>';
       li.onclick = () => showHabitat(r);
       makeButton(li);
       list.appendChild(li);
@@ -542,7 +555,7 @@ function setUpSearch() {
     r.layer.openPopup();
   }
 
-  rank.onchange = render;
+  rank.onchange = () => { showAll = false; render(); list.scrollTop = 0; };
   render();
 }
 
