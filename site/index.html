@@ -32,7 +32,6 @@
   <!-- THE INFO PANEL. Hidden until the round menu button on the map is pressed (app.js, section 11).
        app.js moves it inside the map. The sections start closed. Edit the text in your own words. -->
   <aside id="info-panel" aria-label="Information about the amphibians">
-    <button id="info-close" aria-label="Close the panel">×</button>
 
     <h2>Amphibians at risk</h2>
     <div class="tabs" role="tablist" aria-label="Panel sections">
@@ -40,6 +39,7 @@
       <button type="button" role="tab" class="tab" data-tab="ratings" aria-selected="false">Ratings</button>
       <button type="button" role="tab" class="tab" data-tab="results" aria-selected="false">Results</button>
       <button type="button" role="tab" class="tab" data-tab="sources" aria-selected="false">Sources</button>
+      <button id="info-close" type="button" aria-label="Close the panel">×</button>
     </div>
 
     <section class="tabpane on" id="tab-species" role="tabpanel">
@@ -59,10 +59,104 @@
     <details>
       <summary><span class="dot" data-sp="Pseudacris triseriata"></span>Western chorus frog</summary>
       <p class="small"><em>Pseudacris triseriata</em> (rainette faux-grillon de l’Ouest). Great Lakes / St. Lawrence – Canadian Shield population.</p>
-      <p><b>Habitat.</b> A small amphibian that breeds in shallow wetlands. Wetlands cover only 4.9% of Montérégie (578 km²) (Environment and Climate Change Canada, 2015).</p>
-      <p><b>History.</b> Between 1992 and 2013, suitable habitat for the La Prairie population fell by 57.3% (Environment and Climate Change Canada, 2015).</p>
-      <p><b>Why it is at risk.</b> The assessment links the loss of suitable habitat to housing development (Environment and Climate Change Canada, 2015).</p>
-      <p class="small"><b>Status:</b> Québec threatened · COSEWIC threatened (2008) · SARA threatened · IUCN least concern</p>
+
+      <div class="ratingrow">
+        <span class="badge thr">Québec: threatened</span>
+        <span class="badge thr">COSEWIC: threatened (2008)</span>
+        <span class="badge thr">SARA: threatened</span>
+        <span class="badge ok">IUCN: least concern</span>
+      </div>
+
+      <div class="facts">
+        <div class="fact"><b>2.5 cm</b><span>adult length, about 1 g</span></div>
+        <div class="fact"><b>1 year</b><span>usual adult lifespan (up to 3)</span></div>
+        <div class="fact"><b>40–90 days</b><span>tadpole to adult</span></div>
+        <div class="fact"><b>3–27 days</b><span>eggs hatch, by water temperature</span></div>
+      </div>
+      <p class="small">Sources for this section: Environment Canada (2015) unless another source is named, with the page number of that document.</p>
+
+      <details class="sub" open>
+        <summary>How much has been lost</summary>
+        <div class="facts">
+          <div class="fact bad"><b>10%</b><span>of its former Québec range is still occupied (p. 4)</span></div>
+          <div class="fact bad"><b>37%</b><span>drop in Québec populations over 10 years (COSEWIC 2008, in Environment Canada, 2015, p. 1)</span></div>
+          <div class="fact bad"><b>14%</b><span>of known breeding wetlands in Montérégie destroyed, 2004 to 2009 (p. 4)</span></div>
+          <div class="fact bad"><b>28%</b><span>of known breeding wetlands in Outaouais destroyed, 2004 to 2009 (p. 4)</span></div>
+        </div>
+        <p>In the Boisé de la Commune in La Prairie, one of the last big metapopulations in Canada, 44 of the 99 known breeding wetlands were destroyed between 2004 and 2009. On Île Perrot, 27 of 80 were destroyed in the same years (Environment Canada, 2015, p. 10). Suitable habitat for the La Prairie population fell by 57.3% between 1992 and 2013 (Environment and Climate Change Canada, 2015).</p>
+      </details>
+
+      <details class="sub">
+        <summary>What it looks like and sounds like</summary>
+        <p>A small frog, brown to olive grey, about 2.5 cm long and about 1 g as an adult. It has three dark lines along its back, a wider line on each flank, and a broad line across the eyes (p. 4).</p>
+        <p>Its call is a long <em>cre-ee-ee-ee-eek</em>, like running a fingernail along the teeth of a comb. It is often mixed up with the trill of the spring peeper, which is much more common. The peeper’s own call is a short <em>peeeep</em> (p. 4).</p>
+        <p>Both frogs breed in early spring and form huge choruses. The number of frogs in a chorus cannot be counted, so nobody knows how many chorus frogs there really are. Counts are of sites, not of animals (p. 5).</p>
+        <p class="small"><b>A naming puzzle.</b> Genetic studies suggest these frogs may really be Boreal chorus frogs (<em>Pseudacris maculata</em>). Canada keeps the listing, and defines the population by where it lives (the Great Lakes / St. Lawrence and Canadian Shield region), not by its genes (pp. 2–3).</p>
+      </details>
+
+      <details class="sub">
+        <summary>What it needs, stage by stage</summary>
+        <p>It lives in lowland open areas such as clearings, damp meadows, fallow fields and shrubland, where a small dip in the ground fills with water in spring and usually dries out in summer. The plants are mostly sedges, cattails and reed canary grass, with some willows and alders (p. 6).</p>
+        <table class="mini">
+          <tr><th>Stage</th><th>What it needs</th></tr>
+          <tr><td><b>Breeding</b></td><td>Shallow, temporary wetlands, often under 1 ha in Montérégie. Because they dry out, they hold few predators such as fish. If a pond dries too early, tadpoles die before they change into frogs (pp. 6–7).</td></tr>
+          <tr><td><b>Feeding and moving</b></td><td>Open land within <b>250 to 300 m</b> of the breeding wetland. A frog moves only 3.5 m a day on average (42 m at most), so a road or dry field can dry it out (p. 7).</td></tr>
+          <tr><td><b>Hibernating</b></td><td>Soft soil, under rocks, dead trees or leaves, or in burrows. Almost all hibernate within <b>100 m</b> of the wetland. They survive freezing (p. 7).</td></tr>
+          <tr><td><b>Spreading out</b></td><td>Moving to other wetlands, usually up to 750 m, and up to 2.1 km in wetter years. This keeps small groups connected as a <em>metapopulation</em> (p. 8).</td></tr>
+        </table>
+        <p>Sites where the frog lives have less cropland within 300 m (3%, against 8% where it is absent) and more open uncultivated land (31%, against 13%) (Gagné 2011, in Environment Canada, 2015, p. 7). Wetlands cover only 4.9% of Montérégie (578 km²) (Environment and Climate Change Canada, 2015).</p>
+      </details>
+
+      <details class="sub">
+        <summary>Where it lives in Québec</summary>
+        <p>It used to live across southern Québec, from the Ottawa valley to the Appalachian foothills, west of the Richelieu River. Today it occupies only about 10% of that range (p. 4).</p>
+        <ul class="small">
+          <li><b>Montérégie:</b> just over 800 highly broken-up sites in a band about 20 km wide, between Beauharnois in the south and Contrecoeur in the north.</li>
+          <li><b>Outaouais:</b> more than 220 sites in a band 10 km wide and 100 km long along the Ottawa River, between Gatineau and Île-du-Grand-Calumet.</li>
+          <li>In 2009 the frog occupied 102 km² of habitat: 60 km² in Montérégie and 42 km² in Outaouais, and the area has kept shrinking (p. 4).</li>
+        </ul>
+        <p class="small">A “site” can be one wetland or several, so site counts cannot be compared between the two regions.</p>
+        <p><button type="button" class="zoom-link" data-region="Montérégie">Show Montérégie on the map</button>
+           <button type="button" class="zoom-link" data-region="Outaouais">Show Outaouais on the map</button></p>
+      </details>
+
+      <details class="sub">
+        <summary>Why it is at risk: six threats</summary>
+        <p class="small">Ranked by level of concern (Environment Canada, 2015, p. 9). Click one to read more.</p>
+        <details class="thr">
+          <summary><span class="badge high">High</span> Urban development</summary>
+          <p>Frogs live on land that is wanted for housing, shops and industry. Filling in wetlands is probably behind most of the decline (p. 10). Changes to drainage, pollution, and animals that thrive near people (such as raccoons) also reach into nearby habitat, and the loss of connections leaves small groups alone, so they die out more easily.</p>
+        </details>
+        <details class="thr">
+          <summary><span class="badge high">High</span> More intensive farming</summary>
+          <p>Fields have been filled, drained and levelled, and woods cleared. In Montérégie, natural habitat covered only 33% of the land in 2001 and most frog populations in farmland are surrounded by annual crops. In Outaouais the farming is gentler (more hay and livestock), which helped frogs hang on (pp. 10–11).</p>
+        </details>
+        <details class="thr">
+          <summary><span class="badge med">Medium to high</span> Climate change</summary>
+          <p>Less snow, faster melt and longer droughts make the ponds dry before tadpoles change into frogs. How big this threat is remains unknown (p. 11).</p>
+        </details>
+        <details class="thr">
+          <summary><span class="badge med">Medium</span> Pesticides and fertilizers</summary>
+          <p>Pesticides cause deformities in many amphibians, including this one. Neonicotinoids (insecticides) also cut the number of insects the frogs eat, and they have been found in wetlands next to fields. Nitrates from fertilizer can harm eggs and growth (p. 12).</p>
+        </details>
+        <details class="thr">
+          <summary><span class="badge med">Medium</span> Roads, trails and other linear structures</summary>
+          <p>Roads kill frogs and block their travel. Wetlands cut off by structures were often abandoned after a few years. Puddles in ruts from off-road vehicles can be traps (p. 12).</p>
+        </details>
+        <details class="thr">
+          <summary><span class="badge med">Medium</span> Habitat succession</summary>
+          <p>Frogs prefer open land. When farmland is abandoned, shrubs and forest take over and can change how long a pond holds water. This seems to have wiped out some local populations, but how big the threat is may depend on the site (p. 13).</p>
+        </details>
+      </details>
+
+      <details class="sub">
+        <summary>What is being done</summary>
+        <p><b>Already done in Québec (pp. 14–15):</b> a recovery team (1998), a provincial recovery plan (2000), 11 regional conservation plans, a standard monitoring method, a guide for building temporary wetlands, a captive-breeding program at the Montréal Biodôme and Écomuseum (2008 to 2014), outreach and stewardship agreements with landowners, and a 2001 agreement between the provincial government and Hydro-Québec.</p>
+        <p><b>Places kept:</b> the Boisé du Tremblay (about 25% of the Montérégie frogs), Bois de Brossard (about 530 ha), Bois de Boucherville (about 188 ha) and Breckenridge (p. 14). Look for Bois-de-Brossard in the “most protected” list on the map.</p>
+        <p><b>Goals (p. 13).</b> By 2025: keep the occupied habitat and the number of breeding frogs in each local population, and keep the connections between them. By 2035: make every local population viable by adding habitat, frogs and connections, and, where possible, bring back lost populations or build new habitat.</p>
+        <p><b>Critical habitat.</b> The strategy marks 267 areas as critical habitat, 218 in Ontario and 49 in Québec (p. iv). It is partly mapped, and more studies were planned. Critical habitat is the habitat “necessary for the survival or recovery” of a listed species (p. 18).</p>
+        <p class="small"><b>Can it be recovered?</b> Of four feasibility tests, two are “yes” (frogs still exist, and enough habitat exists) and two are “unknown” (whether the threats can be dealt with, and whether the recovery methods will work) (p. v). The strategy said action plans would be posted by the end of 2020. Check the Species at Risk Public Registry to see what has been published since.</p>
+      </details>
     </details>
 
     <details>
@@ -158,6 +252,7 @@
         <li>COSEWIC. (2011). <em>COSEWIC assessment and status report on the Spring salamander (Gyrinophilus porphyriticus) in Canada</em>. Government of Canada. <a href="https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/cosewic-assessments-status-reports/spring-salamander-2011.html">https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/cosewic-assessments-status-reports/spring-salamander-2011.html</a></li>
         <li>COSEWIC. (2018). <em>COSEWIC assessment and status report on the Allegheny Mountain dusky salamander (Desmognathus ochrophaeus) in Canada</em>. Government of Canada. <a href="https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/cosewic-assessments-status-reports/allegheny-mountain-dusky-salamander-2018.html">https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/cosewic-assessments-status-reports/allegheny-mountain-dusky-salamander-2018.html</a></li>
         <li>Environment and Climate Change Canada. (n.d.). <em>List of wildlife species at risk: Schedule 1</em>. Government of Canada. Retrieved November 7, 2026, from <a href="https://www.canada.ca/en/environment-climate-change/services/species-risk-act-accord-funding/listing-process/wildlife-schedule-1.html">https://www.canada.ca/en/environment-climate-change/services/species-risk-act-accord-funding/listing-process/wildlife-schedule-1.html</a></li>
+        <li>Environment Canada. (2015). <em>Recovery strategy for the Western Chorus Frog (Pseudacris triseriata), Great Lakes / St. Lawrence – Canadian Shield population, in Canada</em> (Species at Risk Act Recovery Strategy Series). Environment Canada.</li>
         <li>Gouvernement du Québec. (n.d.-a). <em>Salamandre pourpre</em> [Species sheet]. Retrieved November 7, 2026, from <a href="https://www.quebec.ca/agriculture-environnement-et-ressources-naturelles/faune/animaux-sauvages-quebec/fiches-especes-fauniques/salamandre-pourpre">https://www.quebec.ca/agriculture-environnement-et-ressources-naturelles/faune/animaux-sauvages-quebec/fiches-especes-fauniques/salamandre-pourpre</a></li>
         <li>Gouvernement du Québec. (n.d.-b). <em>Salamandre sombre des montagnes</em> [Species sheet]. Retrieved November 7, 2026, from <a href="https://www.quebec.ca/agriculture-environnement-et-ressources-naturelles/faune/animaux-sauvages-quebec/fiches-especes-fauniques/salamandre-sombre-montagnes">https://www.quebec.ca/agriculture-environnement-et-ressources-naturelles/faune/animaux-sauvages-quebec/fiches-especes-fauniques/salamandre-sombre-montagnes</a></li>
         <li>Gouvernement du Québec. (n.d.-c). <em>Désignation des espèces menacées ou vulnérables</em>, and <em>Liste des espèces fauniques menacées ou vulnérables</em> (updated March 31, 2025). Retrieved November 7, 2026, from <a href="https://www.quebec.ca/agriculture-environnement-et-ressources-naturelles/faune/gestion-faune-habitats-fauniques/especes-fauniques-menacees-vulnerables/liste">https://www.quebec.ca/agriculture-environnement-et-ressources-naturelles/faune/gestion-faune-habitats-fauniques/especes-fauniques-menacees-vulnerables/liste</a></li>

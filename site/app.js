@@ -701,6 +701,17 @@ document.querySelectorAll('#info-panel .tab').forEach(t => {
   };
 });
 
+// Buttons inside the panel that zoom the map to a region (they use the "Zoom to" pull-down in the top bar).
+document.querySelectorAll('#info-panel .zoom-link').forEach(b => {
+  b.onclick = () => {
+    const sel = document.getElementById('area-select');
+    const opt = [...sel.options].find(o => o.value && o.value.startsWith(b.dataset.region));
+    document.getElementById('info-close').click();                  // close the panel so the map is visible
+    if (opt) { sel.value = opt.value; sel.onchange(); }
+    else if (allHabitat.length) map.fitBounds(groups.habitat.getBounds(), { padding: [40, 40] });
+  };
+});
+
 document.getElementById('info-close').onclick = () => panel.classList.remove('open');
 document.addEventListener('keydown', e => { if (e.key === 'Escape') panel.classList.remove('open'); });
 
