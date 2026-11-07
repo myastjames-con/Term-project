@@ -119,16 +119,16 @@ const shortNames = s => {
 const styles = {
   habitat:   { color: '#00305c', weight: 1, fillColor: '#00305c', fillOpacity: 0.2,  lineJoin: 'round' },
   protected: { color: '#640000', weight: 1, fillColor: '#640000', fillOpacity: 0.2,  lineJoin: 'round' },
-  overlap:   { color: '#003c15', weight: 2, fillColor: '#003c15', fillOpacity: 0.85, lineJoin: 'round' }
+  overlap:   { color: '#240046', weight: 2, fillColor: '#240046', fillOpacity: 0.85, lineJoin: 'round' }
 };
 
 // ONE COLOUR PER SPECIES. The habitat is coloured by species, and the legend reads the same colours,
 // so the legend and the map can never disagree. The species are given colours from this list in order
-// (the species with the most records gets the first colour). The list has no greens or reds, so the
-// habitat does not look like the protected areas (reds and greens) or the overlap (dark green).
+// (the species with the most records gets the first colour). The list has no purples, so the
+// habitat does not look like the protected areas (purples) or the overlap (dark purple).
 // These are colour-blind-safe colours (Okabe and Ito) that stay apart from each other. The protected
-// areas use greens, black and grey only, so no species colour can be mistaken for a protected area.
-const palette = ['#0072b2', '#d55e00', '#cc79a7', '#e69f00', '#56b4e9', '#7a4fa3'];
+// areas use purples, black and grey only, so no species colour can be mistaken for a protected area.
+const palette = ['#0072b2', '#d55e00', '#e69f00', '#56b4e9', '#f0e442'];
 const speciesColour = {};        // filled in when the data loads: { 'Pseudacris triseriata': '#1f78b4', ... }
 const colourFor = sname => speciesColour[sname] || '#999999';
 
@@ -145,7 +145,7 @@ const filters = { prov: null, unprot: null };
 let allHabitat = [];                       // every habitat shape, shown or not
 
 // DOTS. Many habitats are tiny, so zoomed out their shapes are almost invisible. Each habitat also gets a dot
-// at its centre while the map is zoomed out (zoom 12 or less). The dot is in the species colour. A dark-green
+// at its centre while the map is zoomed out (zoom 12 or less). The dot is in the species colour. A dark-purple
 // ring means the habitat overlaps a protected area, a white ring means it does not. A dot opens the same popup.
 const DOT_MAX_ZOOM = 12;
 const dotGroup = L.layerGroup();
@@ -154,7 +154,7 @@ function makeDots() {
   allHabitat.forEach(l => {
     const p = l.feature.properties;
     const dot = L.circleMarker(l.getBounds().getCenter(), {
-      pane: 'dotPane', radius: 7, weight: p.is_protected ? 3 : 2, color: p.is_protected ? '#1b5e20' : '#ffffff',
+      pane: 'dotPane', radius: 7, weight: p.is_protected ? 3 : 2, color: p.is_protected ? '#3f007d' : '#ffffff',
       fillColor: colourFor(p.SNAME), fillOpacity: 1
     });
     dot.on('click', () => l.openPopup(dot.getLatLng()));
@@ -364,10 +364,10 @@ const protPopup = p => '<b>' + esc(p.NOM || 'Unnamed site') + '</b><br>' + esc(i
 // Québec, or private owners. They are my reading of the designation names (see the README).
 const protTypes = [
   { id: 'species',  label: 'Threatened-species habitat (incl. Longueuil emergency order)', color: '#000000', test: /Ordonnance d.urgence|espèce faunique menacée/ },
-  { id: 'federal',  label: 'Federal parks, reserves and measures',   color: '#1b7837', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
-  { id: 'provincial', label: 'Québec parks and reserves',            color: '#5aae61', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
-  { id: 'refuges',  label: 'Québec forest and wildlife refuges',     color: '#a6dba0', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
-  { id: 'private',  label: 'Private and voluntary conservation',     color: '#d9f0d3', test: /naturelle reconnue|conservation volontaire/ },
+  { id: 'federal',  label: 'Federal parks, reserves and measures',   color: '#54278f', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
+  { id: 'provincial', label: 'Québec parks and reserves',            color: '#8c6bb1', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
+  { id: 'refuges',  label: 'Québec forest and wildlife refuges',     color: '#bcb0d9', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
+  { id: 'private',  label: 'Private and voluntary conservation',     color: '#e2dcef', test: /naturelle reconnue|conservation volontaire/ },
   { id: 'other',    label: 'Other conservation measures',            color: '#bdbdbd', test: /Autres mesures/ },
   { id: 'unknown',  label: 'Other designation',                      color: '#bdbdbd', test: /./ }
 ];
@@ -383,9 +383,9 @@ function setProtType(id, on) {
 addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles.protected, protPopup, undefined,
   data => {
     groups.protected.options.style = f => {
-      // fill = the type's colour; the border is one dark green (black for species habitat) so pale types still show
+      // fill = the type's colour; the border is one dark purple (black for species habitat) so pale types still show
       const t = protTypeOf(f.properties.DESIGNOM);
-      return { ...styles.protected, color: t.id === 'species' ? '#000000' : t.id === 'other' || t.id === 'unknown' ? '#737373' : '#1b5e20',
+      return { ...styles.protected, color: t.id === 'species' ? '#000000' : t.id === 'other' || t.id === 'unknown' ? '#737373' : '#3f007d',
                fillColor: t.color, weight: 1.2, fillOpacity: 0.5 };
     };
     groups.protected.setStyle(groups.protected.options.style);
@@ -422,7 +422,7 @@ addGroup('overlap', '../data/amphibian_protected_overlap.geojson', 'overlapPane'
 // 'color' is the box colour: for the protected areas it comes from colourFor, so it matches the map.
 const legendSections = [
   { title: 'Conservation', items: [
-    { key: 'overlap',   label: 'Habitat inside a protected area', color: '#003c15' } ] }
+    { key: 'overlap',   label: 'Habitat inside a protected area', color: '#240046' } ] }
 ];
 
 // The species rows (one colour each) are added by addSpeciesRows once the data has loaded.
@@ -460,8 +460,8 @@ legend.onAdd = () => {
              '<button class="legend-min" title="Minimize" aria-label="Minimize legend">–</button></div>' +
              '<div class="legend-body">' +
              '<div class="legend-sub">Amphibian habitat (colour = species)</div><div id="legend-species"></div>' +
-             '<div class="legend-note"><span class="ring-eg"></span> Zoomed out, each habitat is a dot. Dark-green ring = overlaps a protected area. White ring = not protected.</div>' +
-             '<div class="legend-sub">Protected area type (greens, black and grey)</div><div id="legend-protected"></div>';
+             '<div class="legend-note"><span class="ring-eg"></span> Zoomed out, each habitat is a dot. Dark-purple ring = overlaps a protected area. White ring = not protected.</div>' +
+             '<div class="legend-sub">Protected area type (purples, black and grey)</div><div id="legend-protected"></div>';
   legendSections.forEach(s => {
     html += '<div class="legend-sub">' + s.title + '</div>';        // section subtitle
     s.items.forEach(i => {
