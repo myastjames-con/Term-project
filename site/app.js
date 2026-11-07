@@ -460,16 +460,17 @@ legend.onAdd = () => {
 legend.addTo(map);
 
 
-// Buttons to zoom to the two groups of habitat: Outaouais in the west, Montérégie in the east.
-// The two are far apart, so with both in view each one is small. West of -74.8 degrees longitude is Outaouais.
+// Buttons to zoom to each region that has habitat (the notebook writes the region of each record).
+// The regions can be far apart, so with all of them in view each one is small.
 function addRegionButtons() {
-  const west = [], east = [];
-  allHabitat.forEach(l => (l.getBounds().getCenter().lng < -74.8 ? west : east).push(l));
+  const byRegion = {};
+  allHabitat.forEach(l => { const r = l.feature.properties.region || 'Other'; (byRegion[r] = byRegion[r] || []).push(l); });
+  const regions = Object.keys(byRegion).sort((x, y) => byRegion[y].length - byRegion[x].length);
+  if (regions.length < 2) return;                 // one region: the zoom buttons would add nothing
   const ctl = L.control({ position: 'topright' });
   ctl.onAdd = () => {
     const div = L.DomUtil.create('div', 'region-btns');
-    [['All habitat', allHabitat], ['Outaouais', west], ['Montérégie', east]].forEach(([label, ls]) => {
-      if (!ls.length) return;
+    [['All habitat', allHabitat]].concat(regions.map(r => [r, byRegion[r]])).forEach(([label, ls]) => {
       const b = L.DomUtil.create('button', '', div);
       b.type = 'button';
       b.textContent = label;
@@ -650,6 +651,8 @@ function fillPanel(sites) {
     html += '</ul>';
   }
   document.getElementById('panel-overlap').innerHTML = html;
+  // the colour dots next to the species names in the panel match the legend
+  document.querySelectorAll('#info-panel .dot[data-sp]').forEach(d => { d.style.background = colourFor(d.dataset.sp); });
 }
 
 

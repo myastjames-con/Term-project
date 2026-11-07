@@ -4,17 +4,20 @@
  "protected_near_km": 10,
  "regions": [
   "Mont\u00e9r\u00e9gie",
-  "Outaouais"
+  "Outaouais",
+  "Estrie",
+  "Chaudi\u00e8re-Appalaches",
+  "Centre-du-Qu\u00e9bec"
  ],
  "simplify_degrees": 0.0005,
- "amphibian_records": 155,
- "species": 1,
- "protected_records": 25,
- "protected_areas": 119,
- "overlap_pieces": 39,
+ "amphibian_records": 571,
+ "species": 3,
+ "protected_records": 119,
+ "protected_areas": 315,
+ "overlap_pieces": 166,
  "sizes_mb": {
-  "amphibians": 0.16,
-  "protected_areas": 0.1,
-  "overlap": 0.03
+  "amphibians": 0.67,
+  "protected_areas": 0.24,
+  "overlap": 0.14
  }
 }
