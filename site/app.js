@@ -352,8 +352,10 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
 
 // 7. LAYER 2: Conservation areas (middle)
 // Popup text when you click a protected area: name, type, creation date.
+// A small colour square plus the group's name, worded exactly as in the legend.
+const typeChip = d => { const t = protTypeOf(d); return '<span class="pchip" style="background:' + t.color + '"></span><b>' + esc(t.label) + '</b>'; };
 const protPopup = p => '<b>' + esc(p.NOM || 'Unnamed site') + '</b><br>' + esc(inEnglish(designationEnglish, p.DESIGNOM)) +
-                       '<br>Group: ' + esc(protTypeOf(p.DESIGNOM).label) +
+                       '<br>Legend group: ' + typeChip(p.DESIGNOM) +
                        '<br>Created: ' + esc((p.DA_CREATIO || 'n/a').slice(0, 10));
 
 // PROTECTED AREA TYPES. Each designation in the data (national park, ecological reserve, ...) is put in one
@@ -386,7 +388,7 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
       // fill = the type's colour; the border is one dark purple (black for species habitat) so pale types still show
       const t = protTypeOf(f.properties.DESIGNOM);
       return { ...styles.protected, color: t.id === 'species' ? '#000000' : t.id === 'other' || t.id === 'unknown' ? '#737373' : '#3f007d',
-               fillColor: t.color, weight: 1.2, fillOpacity: 0.5 };
+               fillColor: t.color, weight: 0.8, fillOpacity: 0.75 };
     };
     groups.protected.setStyle(groups.protected.options.style);
     const counts = {};
@@ -414,7 +416,7 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
 // The piece of habitat that overlaps a protected area (made in the notebook).
 addGroup('overlap', '../data/amphibian_protected_overlap.geojson', 'overlapPane', styles.overlap,
   p => '<b>' + esc(p.GCOMNAME || p.SNAME) + ' habitat inside a protected area</b><br>' + esc(p.NOM || '') + '<br>' +
-       esc(inEnglish(designationEnglish, p.DESIGNOM)));
+       esc(inEnglish(designationEnglish, p.DESIGNOM)) + '<br>Legend group: ' + typeChip(p.DESIGNOM));
 
 
 // 9. Legend
