@@ -7,11 +7,24 @@ L.control.zoom({ position: 'topright' }).addTo(map);
 
 
 // 2. Basemap
-// OpenStreetMap tiles. The attribution text (bottom right) is required by their licence.
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+// Three basemaps to choose from (the layers button, top right). The light one starts: its quiet grey
+// makes the coloured protected areas easy to see, which the green street map did not.
+// The attribution text (bottom right) is required by the licences.
+const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const baseMaps = {
+  'Light map (easiest to read)': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19,
+    attribution: osmAttr + ' &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }),
+  'Street map (OpenStreetMap)': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: osmAttr
+  }),
+  'Satellite (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19, attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics'
+  })
+};
+baseMaps['Light map (easiest to read)'].addTo(map);
+L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
 
 // 3. Stacking order of the layers
@@ -171,12 +184,26 @@ function buildFilterBar(sites) {
     el.style.setProperty('--c', '#c2410c');
     el.title = 'Show only the habitat that no protected area covers. Click again to show all.';
     el.innerHTML = '<span class="sw"></span>Show only habitat with no protection <span class="n">' + nUn + '</span>';
-    el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; refreshHabitat(); };
+    el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; setFocus(!!filters.unprot); refreshHabitat(); };
     makeButton(el);
     bar.appendChild(el);
   }
   map.invalidateSize();                      // the bar changed height, so tell the map
 }
+
+// "Show only habitat with no protection" also hides the protected areas and the overlap, so only the
+// unprotected habitat is left on the map. Turning it off brings back whatever was showing before.
+const hiddenForFocus = [];
+function setFocus(on) {
+  if (on) {
+    [groups.protected, groups.overlap].forEach(g => { if (g && map.hasLayer(g)) { map.removeLayer(g); hiddenForFocus.push(g); } });
+  } else {
+    hiddenForFocus.splice(0).forEach(g => map.addLayer(g));
+  }
+  const lg = document.querySelector('.legend');
+  if (lg) lg.classList.toggle('focus', on);
+}
+
 
 // 5. HELPER FUNCTION: load a GeoJSON file and add it to the map as a layer. The function takes several arguments:
 // key      = the layer's name in 'groups' (used by the legend)
@@ -281,6 +308,7 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
     setUpSearch();                                       // section 10
     fillPanel(sites);                                    // section 11
     map.fitBounds(groups.habitat.getBounds(), { padding: [30, 30] });           // zoom to the data
+    addRegionButtons();
   });
 
 
@@ -432,6 +460,29 @@ legend.onAdd = () => {
 legend.addTo(map);
 
 
+// Buttons to zoom to the two groups of habitat: Outaouais in the west, Montérégie in the east.
+// The two are far apart, so with both in view each one is small. West of -74.8 degrees longitude is Outaouais.
+function addRegionButtons() {
+  const west = [], east = [];
+  allHabitat.forEach(l => (l.getBounds().getCenter().lng < -74.8 ? west : east).push(l));
+  const ctl = L.control({ position: 'topright' });
+  ctl.onAdd = () => {
+    const div = L.DomUtil.create('div', 'region-btns');
+    [['All habitat', allHabitat], ['Outaouais', west], ['Montérégie', east]].forEach(([label, ls]) => {
+      if (!ls.length) return;
+      const b = L.DomUtil.create('button', '', div);
+      b.type = 'button';
+      b.textContent = label;
+      b.onclick = () => map.fitBounds(L.featureGroup(ls).getBounds(), {
+        paddingTopLeft: [window.innerWidth < 700 ? 20 : 380, 60], paddingBottomRight: [60, 60], maxZoom: 13 });
+    });
+    L.DomEvent.disableClickPropagation(div);
+    return div;
+  };
+  ctl.addTo(map);
+}
+
+
 // 10. RANKING LIST: "Which habitats have the largest share of their area protected?"
 // The list sits top left, next to the menu button. The pull-down chooses how it is ranked
 // (% protected, hectares protected, or habitat size). Clicking a result zooms to that habitat and opens its popup.
@@ -542,7 +593,7 @@ function setUpSearch() {
   function showHabitat(r) {
     if (!map.hasLayer(groups.habitat)) map.addLayer(groups.habitat);
     // in case the legend or a chip hid this habitat, show it again
-    if (!groups.habitat.hasLayer(r.layer)) { hiddenSpecies.delete(r.p.SNAME); filters.prov = null; filters.unprot = null; refreshHabitat(); }
+    if (!groups.habitat.hasLayer(r.layer)) { hiddenSpecies.delete(r.p.SNAME); filters.prov = null; filters.unprot = null; setFocus(false); refreshHabitat(); }
     document.querySelectorAll('.legend-item[data-species]').forEach(el => el.classList.toggle('off', hiddenSpecies.has(el.dataset.species)));
     clearHighlight();
     highlight = L.geoJSON(r.layer.feature, {

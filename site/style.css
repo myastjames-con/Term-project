@@ -175,3 +175,15 @@ button:focus-visible, select:focus-visible { outline: 3px solid #1a5fb4; outline
 .more-btn:hover { background: #eef3ea; }
 .more-btn[hidden] { display: none; }
 .more-btn:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
+
+/* zoom-to-region buttons (top right, under the zoom and layers buttons) */
+.region-btns { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.region-btns button {
+  cursor: pointer; padding: 4px 8px; border: 1px solid #999; border-radius: 4px; background: #fff;
+  font: 600 12px/1.3 system-ui, sans-serif; color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+.region-btns button:hover { background: #eef3ea; }
+.region-btns button:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
+
+/* while "show only habitat with no protection" is on, the protected-area rows of the legend are not in use */
+.legend.focus #legend-protected, .legend.focus .legend-item[data-key] { opacity: .35; pointer-events: none; }
