@@ -383,10 +383,10 @@ const protPopup = p => '<b>' + esc(p.NOM || 'Unnamed site') + '</b><br>' + esc(i
 // They sort the registry by who protects the land: species-at-risk habitat, the federal government,
 // Québec, or private owners. They are my reading of the designation names (see the README).
 const protTypes = [
-  { id: 'species',  label: 'Threatened-species habitat (incl. Longueuil emergency order)', color: '#000000', test: /Ordonnance d.urgence|espèce faunique menacée/ },
-  { id: 'federal',  label: 'Federal parks, reserves and measures',   color: '#54278f', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
+  { id: 'species',  label: 'Threatened-species habitat', color: '#000000', test: /Ordonnance d.urgence|espèce faunique menacée/ },
+  { id: 'federal',  label: 'Federal parks and reserves',   color: '#54278f', test: /Canada|fédérale|Réserve nationale de faune|Réserve marine|Parc marin/ },
   { id: 'provincial', label: 'Québec parks and reserves',            color: '#8c6bb1', test: /^Parc national|Réserve de parc|Réserve (écologique|de biodiversité|aquatique)|territoire|Paysage humanisé/i },
-  { id: 'refuges',  label: 'Québec forest and wildlife refuges',     color: '#bcb0d9', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
+  { id: 'refuges',  label: 'Québec wildlife and forest refuges',     color: '#bcb0d9', test: /Refuge|Forêt|cerf|Vasière|faune|faunique|poisson/ },
   { id: 'private',  label: 'Private and voluntary conservation',     color: '#e2dcef', test: /naturelle reconnue|conservation volontaire/ },
   { id: 'other',    label: 'Other conservation measures',            color: '#bdbdbd', test: /Autres mesures/ },
   { id: 'unknown',  label: 'Other designation',                      color: '#bdbdbd', test: /./ }
@@ -441,7 +441,7 @@ addGroup('overlap', '../data/amphibian_protected_overlap.geojson', 'overlapPane'
 // Each row is one clickable entry. 'key' links a row to a layer in 'groups' (section 5).
 // 'color' is the box colour: for the protected areas it comes from colourFor, so it matches the map.
 const legendSections = [
-  { title: 'Conservation', items: [
+  { title: 'Overlap', items: [
     { key: 'overlap',   label: 'Habitat inside a protected area', color: '#240046' } ] }
 ];
 
@@ -464,24 +464,24 @@ function addSpeciesRows(list) {
     row.dataset.species = s.sname;
     row.style.setProperty('--c', colourFor(s.sname));
     row.title = s.sname;
-    row.innerHTML = '<span class="box"></span><span class="grow">' + esc(s.label) + '</span><span class="count">' + s.n + '</span>';
+    row.innerHTML = '<span class="box"></span><span class="grow">' + esc(String(s.label).replace(/\s[-–]\s.*$/, '')) + '</span><span class="count">' + s.n + '</span>';
     row.onclick = () => setSpecies(s.sname, hiddenSpecies.has(s.sname));      // click = hide or show this species
     makeButton(row);
     box.appendChild(row);
   });
 }
 
-const legend = L.control({ position: 'bottomright' });
+const legend = L.control({ position: 'bottomleft' });
 legend.onAdd = () => {
   const div = L.DomUtil.create('div', 'legend');
 
   // Build the legend HTML: title + minimize button, then each section and its rows.
-  let html = '<div class="legend-head"><span class="legend-title">Legend: click a row to switch it on or off</span>' +
+  let html = '<div class="legend-head"><span class="legend-title">Legend <span class="legend-hint">(click a row to hide it)</span></span>' +
              '<button class="legend-min" title="Minimize" aria-label="Minimize legend">–</button></div>' +
              '<div class="legend-body">' +
-             '<div class="legend-sub">Amphibian habitat (colour = species)</div><div id="legend-species"></div>' +
-             '<div class="legend-note"><span class="ring-eg"></span> Zoomed out, each habitat is a dot. Dark-purple ring = overlaps a protected area. White ring = not protected.</div>' +
-             '<div class="legend-sub">Protected area type (purples, black and grey)</div><div id="legend-protected"></div>';
+             '<div class="legend-sub">Amphibian habitat</div><div id="legend-species"></div>' +
+             '<div class="legend-note"><span class="ring-eg"></span> Dot = one site. Purple ring = protected.</div>' +
+             '<div class="legend-sub">Protected areas</div><div id="legend-protected"></div>';
   legendSections.forEach(s => {
     html += '<div class="legend-sub">' + s.title + '</div>';        // section subtitle
     s.items.forEach(i => {
@@ -505,6 +505,7 @@ legend.onAdd = () => {
   btn.onclick = () => {
     const c = div.classList.toggle('collapsed');
     btn.textContent = c ? '+' : '–';
+    if (!c) closeResults();                       // the list and the legend share the left side: one open at a time
   };
 
   // Clicking a row turns its layer on or off. The box goes hollow when it's off.
@@ -536,9 +537,9 @@ function addRegionButtons() {
   regions.forEach(r => sel.add(new Option('Zoom to: ' + r + ' (' + byRegion[r].length + ')', r)));
   sel.onchange = () => {
     const ls = sel.value ? byRegion[sel.value] : allHabitat;
-    // the ranking list is on the right, so keep the habitat clear of it
+    // the ranking list is on the left, so keep the habitat clear of it
     map.fitBounds(L.featureGroup(ls).getBounds(), {
-      paddingTopLeft: [60, 60], paddingBottomRight: [window.innerWidth < 700 ? 20 : 380, 60], maxZoom: 13 });
+      paddingTopLeft: [window.innerWidth < 700 ? 20 : 380, 60], paddingBottomRight: [60, 60], maxZoom: 13 });
   };
 }
 
@@ -557,15 +558,15 @@ menuCtl.onAdd = () => {
 menuCtl.addTo(map);
 L.control.zoom({ position: 'topleft' }).addTo(map);
 
-const toolbar = L.control({ position: 'topright' });
+const toolbar = L.control({ position: 'topleft' });
 toolbar.onAdd = () => {
   const div = L.DomUtil.create('div', 'toolbar');
   div.innerHTML =
     '<div class="toolbar-row">' +
       '<span class="toolbar-title">Which habitats are most protected?</span>' +
-      '<button class="toolbar-min" id="results-toggle" title="Hide or show the results" aria-label="Hide or show the results">–</button>' +
+      '<button class="toolbar-min" id="results-toggle" title="Hide or show the results" aria-label="Hide or show the results">+</button>' +
     '</div>' +
-    '<div class="results" id="results">' +
+    '<div class="results hidden" id="results">' +
       '<label class="rank">Rank by <select id="rank">' +
         '<option value="pct">% of the habitat protected</option>' +
         '<option value="ha">hectares protected</option>' +
@@ -585,11 +586,21 @@ toolbar.addTo(map);
 document.getElementById('menu-btn').onclick = () => document.getElementById('info-panel').classList.toggle('open');
 
 // Hide or show the results list.
+function closeResults() {
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('results-toggle').textContent = '+';
+}
 document.getElementById('results-toggle').onclick = () => {
   const box = document.getElementById('results');
   const hidden = box.classList.toggle('hidden');
   document.getElementById('results-toggle').textContent = hidden ? '+' : '–';
+  if (!hidden) {                                   // opening the list closes the legend (they share the left side)
+    const lg = document.querySelector('.legend');
+    if (lg && !lg.classList.contains('collapsed')) lg.querySelector('.legend-min').click();
+  }
 };
+// the whole title bar of the list is a button too
+document.querySelector('.toolbar-title').onclick = () => document.getElementById('results-toggle').click();
 
 let highlight = null;     // the yellow outline around the habitat you clicked in the list
 let highlightLayer = null; // the habitat that outline belongs to
@@ -671,8 +682,8 @@ function setUpSearch() {
       style: { color: '#ffb000', weight: 4, fill: false }
     }).addTo(map);
     highlightLayer = r.layer;
-    // paddingBottomRight keeps the habitat clear of the list on the right, so its popup is not hidden behind it
-    map.fitBounds(r.layer.getBounds(), { paddingTopLeft: [60, 60], paddingBottomRight: [380, 60], maxZoom: 14 });
+    // paddingTopLeft keeps the habitat clear of the list on the left, so its popup is not hidden behind it
+    map.fitBounds(r.layer.getBounds(), { paddingTopLeft: [380, 60], paddingBottomRight: [60, 60], maxZoom: 14 });
     r.layer.openPopup();
   }
 
@@ -742,4 +753,4 @@ function fillPanel(sites) {
 
 
 // 12. scale bar
-new L.Control.Scale().addTo(map);
+new L.Control.Scale({ position: 'bottomright' }).addTo(map);

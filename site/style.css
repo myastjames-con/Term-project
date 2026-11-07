@@ -237,3 +237,22 @@ table.glance td[class^="r-"] { font-weight: 600; text-align: center; }
 
 .legend { max-height: 36vh; }
 #results-list { max-height: 24vh; }
+
+/* ---- left-side cards: ranking list (under the buttons) and legend (bottom), same look ---- */
+.toolbar, .legend { background: #fff; border: 1px solid #d9ddd5; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  -webkit-backdrop-filter: none; backdrop-filter: none; }
+.toolbar { width: 300px; max-width: calc(100vw - 90px); padding: 0; }
+.toolbar-row { padding: 6px 8px 6px 12px; justify-content: space-between; }
+.toolbar-title { font-weight: 700; font-size: 14px; color: var(--accent); cursor: pointer; flex: 1; }
+.toolbar-min { font-size: 20px; line-height: 1; }
+.results { padding: 4px 12px 10px; border-top: 1px solid #e5e5e5; }
+#results-list { max-height: 30vh; padding-left: 20px; }
+.legend { max-height: none; overflow: visible; padding: 8px 12px 8px; font-size: 13px; max-width: 300px; }
+.legend-title { font-size: 14px; color: var(--accent); }
+.legend-hint { font-weight: 400; font-size: 11px; color: #666; }
+.legend-sub { margin: 7px 0 3px; padding-top: 5px; font-size: 11px; }
+.legend-item { padding: 1px 0; }
+.legend-note { font-size: 11px; margin: 2px 0 0; }
+.legend-body > .legend-sub:first-child { margin-top: 4px; }
+.leaflet-bottom.leaflet-left .legend { margin-bottom: 14px; margin-left: 10px; }
+@media (max-width: 700px) { .toolbar { width: calc(100vw - 80px); } }
