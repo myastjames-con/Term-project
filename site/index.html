@@ -19,10 +19,12 @@
     </div>
     <div class="bar-bottom">
       <div id="filter-bar"></div>
-      <button type="button" id="legend-btn" aria-expanded="false" aria-controls="legend-drop">Legend and layers <span class="caret">▾</span></button>
+      <div class="visuals">
+        <span class="chip-label">Visuals:</span>
+        <select id="base-select" aria-label="Background map"></select>
+        <select id="area-select" aria-label="Zoom to an area"></select>
+      </div>
     </div>
-    <!-- The legend (app.js puts it here). It drops down under the bar so it never covers the map. -->
-    <div id="legend-drop" hidden></div>
   </header>
 
   <!-- THE MAP -->

@@ -1,9 +1,8 @@
 // 1. Create map and set its initial view. The map is drawn in the <div> with id="map" in index.html.
 // [52, -72] = latitude, longitude (roughly the middle of Québec). 5 = zoom level (bigger = closer).
 // (Once the data loads, section 6 zooms the map to fit it.)
-// The +/- zoom buttons go top right, because the top left is for the menu button and the search box.
+// The +/- zoom buttons go top left, under the menu button (added in section 10).
 const map = L.map('map', { zoomControl: false }).setView([52, -72], 5);
-L.control.zoom({ position: 'topright' }).addTo(map);
 
 
 // 2. Basemap
@@ -26,7 +25,17 @@ const baseMaps = {
   })
 };
 baseMaps['Light map (easiest to read)'].addTo(map);
-L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+// The basemap is chosen from the "Background" pull-down in the top bar (index.html).
+let currentBase = baseMaps['Light map (easiest to read)'];
+(function () {
+  const sel = document.getElementById('base-select');
+  Object.keys(baseMaps).forEach(name => sel.add(new Option(name, name)));
+  sel.onchange = () => {
+    map.removeLayer(currentBase);
+    currentBase = baseMaps[sel.value].addTo(map);
+    currentBase.bringToBack();
+  };
+})();
 
 
 // 3. Stacking order of the layers
@@ -467,7 +476,8 @@ legend.onAdd = () => {
   const div = L.DomUtil.create('div', 'legend');
 
   // Build the legend HTML: title + minimize button, then each section and its rows.
-  let html = '<div class="legend-head"><span class="legend-title">Click a row to switch it on or off</span></div>' +
+  let html = '<div class="legend-head"><span class="legend-title">Legend: click a row to switch it on or off</span>' +
+             '<button class="legend-min" title="Minimize" aria-label="Minimize legend">–</button></div>' +
              '<div class="legend-body">' +
              '<div class="legend-sub">Amphibian habitat (colour = species)</div><div id="legend-species"></div>' +
              '<div class="legend-note"><span class="ring-eg"></span> Zoomed out, each habitat is a dot. Dark-purple ring = overlaps a protected area. White ring = not protected.</div>' +
@@ -482,10 +492,20 @@ legend.onAdd = () => {
   div.innerHTML = html + '</div>';
   div.querySelectorAll('.legend-item').forEach(makeButton);
 
+  if (window.innerWidth < 700 || window.innerHeight < 650) div.classList.add('collapsed');   // on a phone or a short window the legend starts closed so the map is visible
+
   // Clicking the legend doesn't click the map behind it.
   L.DomEvent.disableClickPropagation(div);
 
   // Minimize / expand button: hides the rows and swaps – and +.
+
+  // Minimize / expand button: hides the rows and swaps – and +.
+  const btn = div.querySelector('.legend-min');
+  if (div.classList.contains('collapsed')) btn.textContent = '+';
+  btn.onclick = () => {
+    const c = div.classList.toggle('collapsed');
+    btn.textContent = c ? '+' : '–';
+  };
 
   // Clicking a row turns its layer on or off. The box goes hollow when it's off.
   div.querySelectorAll('.legend-item[data-key]').forEach(el => {
@@ -501,53 +521,47 @@ legend.onAdd = () => {
   });
   return div;
 };
-// The legend lives in a drop-down under the top bar (not on the map), so it never covers the layers.
-document.getElementById('legend-drop').appendChild(legend.onAdd());
-const legendBtn = document.getElementById('legend-btn');
-const legendDrop = document.getElementById('legend-drop');
-function toggleLegend(open) {
-  legendDrop.hidden = !open;
-  legendBtn.setAttribute('aria-expanded', open);
-  legendBtn.classList.toggle('on', open);
-}
-legendBtn.onclick = () => toggleLegend(legendDrop.hidden);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleLegend(false); });
-map.on('click', () => toggleLegend(false));          // a click on the map closes it
+legend.addTo(map);
 
 
-// Buttons to zoom to each region that has habitat (the notebook writes the region of each record).
+// "Go to" pull-down in the top bar: zoom to each region that has habitat (the notebook writes the region of each record).
 // The regions can be far apart, so with all of them in view each one is small.
 function addRegionButtons() {
   const byRegion = {};
   allHabitat.forEach(l => { const r = l.feature.properties.region || 'Other'; (byRegion[r] = byRegion[r] || []).push(l); });
   const regions = Object.keys(byRegion).sort((x, y) => byRegion[y].length - byRegion[x].length);
-  if (regions.length < 2) return;                 // one region: the zoom buttons would add nothing
-  const ctl = L.control({ position: 'topright' });
-  ctl.onAdd = () => {
-    const div = L.DomUtil.create('div', 'region-btns');
-    [['All habitat', allHabitat]].concat(regions.map(r => [r, byRegion[r]])).forEach(([label, ls]) => {
-      const b = L.DomUtil.create('button', '', div);
-      b.type = 'button';
-      b.textContent = label;
-      b.onclick = () => map.fitBounds(L.featureGroup(ls).getBounds(), {
-        paddingTopLeft: [window.innerWidth < 700 ? 20 : 380, 60], paddingBottomRight: [60, 60], maxZoom: 13 });
-    });
-    L.DomEvent.disableClickPropagation(div);
-    return div;
+  const sel = document.getElementById('area-select');
+  if (regions.length < 2) { sel.hidden = true; return; }          // one region: the pull-down would add nothing
+  sel.add(new Option('Zoom to: all habitat', ''));
+  regions.forEach(r => sel.add(new Option('Zoom to: ' + r + ' (' + byRegion[r].length + ')', r)));
+  sel.onchange = () => {
+    const ls = sel.value ? byRegion[sel.value] : allHabitat;
+    // the ranking list is on the right, so keep the habitat clear of it
+    map.fitBounds(L.featureGroup(ls).getBounds(), {
+      paddingTopLeft: [60, 60], paddingBottomRight: [window.innerWidth < 700 ? 20 : 380, 60], maxZoom: 13 });
   };
-  ctl.addTo(map);
 }
 
 
 // 10. RANKING LIST: "Which habitats have the largest share of their area protected?"
 // The list sits top left, next to the menu button. The pull-down chooses how it is ranked
 // (% protected, hectares protected, or habitat size). Clicking a result zooms to that habitat and opens its popup.
-const toolbar = L.control({ position: 'topleft' });
+// The menu button (three lines) is its own control, top left. The ranking list is top right.
+const menuCtl = L.control({ position: 'topleft' });
+menuCtl.onAdd = () => {
+  const div = L.DomUtil.create('div', 'menu-ctl');
+  div.innerHTML = '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>';
+  L.DomEvent.disableClickPropagation(div);
+  return div;
+};
+menuCtl.addTo(map);
+L.control.zoom({ position: 'topleft' }).addTo(map);
+
+const toolbar = L.control({ position: 'topright' });
 toolbar.onAdd = () => {
   const div = L.DomUtil.create('div', 'toolbar');
   div.innerHTML =
     '<div class="toolbar-row">' +
-      '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>' +
       '<span class="toolbar-title">Which habitats are most protected?</span>' +
       '<button class="toolbar-min" id="results-toggle" title="Hide or show the results" aria-label="Hide or show the results">–</button>' +
     '</div>' +
@@ -657,8 +671,8 @@ function setUpSearch() {
       style: { color: '#ffb000', weight: 4, fill: false }
     }).addTo(map);
     highlightLayer = r.layer;
-    // paddingTopLeft keeps the habitat to the right of the list, so its popup is not hidden behind it
-    map.fitBounds(r.layer.getBounds(), { paddingTopLeft: [380, 60], paddingBottomRight: [60, 60], maxZoom: 14 });
+    // paddingBottomRight keeps the habitat clear of the list on the right, so its popup is not hidden behind it
+    map.fitBounds(r.layer.getBounds(), { paddingTopLeft: [60, 60], paddingBottomRight: [380, 60], maxZoom: 14 });
     r.layer.openPopup();
   }
 

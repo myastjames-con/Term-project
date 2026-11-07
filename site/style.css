@@ -113,7 +113,7 @@ a { color: var(--accent); }
 /* info panel: slides in from the left over the map */
 #info-panel {
   position: absolute; top: 0; left: 0; bottom: 0;
-  width: 370px; max-width: 92%;     /* wider than the search box, so the box is fully covered */
+  width: 500px; max-width: 92%;     /* wider than the search box, so the box is fully covered */
   box-sizing: border-box;
   padding: 56px 18px 18px;
   overflow-y: auto;
@@ -225,16 +225,15 @@ table.glance td[class^="r-"] { font-weight: 600; text-align: center; }
 .stat span { font-size: 12px; color: var(--muted); }
 .bar-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e5e5; flex-wrap: wrap; }
 #filter-bar { margin-top: 0; }
-#legend-btn { cursor: pointer; font: 600 13px/1.4 system-ui, sans-serif; padding: 5px 12px; border: 1px solid var(--accent); border-radius: 16px; background: #fff; color: var(--accent); }
-#legend-btn:hover, #legend-btn.on { background: var(--accent); color: #fff; }
-#legend-drop { position: absolute; right: 12px; top: 100%; margin-top: 4px; z-index: 1600; }
-#legend-drop[hidden] { display: none; }
-#legend-drop .legend { max-width: 340px; max-height: calc(100vh - 190px); background: #fff; backdrop-filter: none; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
-.legend-min { display: none; }
+#topbar select { font: 13px/1.4 system-ui, sans-serif; padding: 4px 8px; border: 1px solid #999; border-radius: 16px; background: #fff; color: var(--text); max-width: 260px; }
+.visuals { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.menu-ctl .menu-btn { box-shadow: 0 1px 6px rgba(0,0,0,.3); }
 @media (max-width: 700px) {
   .stat { min-width: 0; padding: 3px 8px; }
   .stat b { font-size: 16px; }
   .bar-title { font-size: 16px; }
-  #legend-drop { left: 8px; right: 8px; }
-  #legend-drop .legend { max-width: none; max-height: 60vh; }
+  .toolbar { width: calc(100vw - 80px); }
 }
+
+.legend { max-height: 36vh; }
+#results-list { max-height: 24vh; }
