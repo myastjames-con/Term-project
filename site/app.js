@@ -471,7 +471,7 @@ function addSpeciesRows(list) {
   });
 }
 
-const legend = L.control({ position: 'bottomleft' });
+const legend = L.control({ position: 'topleft' });
 legend.onAdd = () => {
   const div = L.DomUtil.create('div', 'legend');
 
@@ -492,7 +492,7 @@ legend.onAdd = () => {
   div.innerHTML = html + '</div>';
   div.querySelectorAll('.legend-item').forEach(makeButton);
 
-  if (window.innerWidth < 700 || window.innerHeight < 650) div.classList.add('collapsed');   // on a phone or a short window the legend starts closed so the map is visible
+  if (window.innerWidth < 700 || window.innerHeight < 800) div.classList.add('collapsed');   // on a phone or a short window the legend starts closed so the map is visible
 
   // Clicking the legend doesn't click the map behind it.
   L.DomEvent.disableClickPropagation(div);
@@ -505,7 +505,6 @@ legend.onAdd = () => {
   btn.onclick = () => {
     const c = div.classList.toggle('collapsed');
     btn.textContent = c ? '+' : '–';
-    if (!c) closeResults();                       // the list and the legend share the left side: one open at a time
   };
 
   // Clicking a row turns its layer on or off. The box goes hollow when it's off.
@@ -522,7 +521,6 @@ legend.onAdd = () => {
   });
   return div;
 };
-legend.addTo(map);
 
 
 // "Go to" pull-down in the top bar: zoom to each region that has habitat (the notebook writes the region of each record).
@@ -547,20 +545,15 @@ function addRegionButtons() {
 // 10. RANKING LIST: "Which habitats have the largest share of their area protected?"
 // The list sits top left, next to the menu button. The pull-down chooses how it is ranked
 // (% protected, hectares protected, or habitat size). Clicking a result zooms to that habitat and opens its popup.
-// The menu button (three lines) is its own control, top left. The ranking list is top right.
-const menuCtl = L.control({ position: 'topleft' });
-menuCtl.onAdd = () => {
-  const div = L.DomUtil.create('div', 'menu-ctl');
-  div.innerHTML = '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>';
-  L.DomEvent.disableClickPropagation(div);
-  return div;
-};
-menuCtl.addTo(map);
-L.control.zoom({ position: 'topleft' }).addTo(map);
+// Top left: the menu button (three lines) with the ranking list beside it, then the legend underneath.
+// The zoom buttons are top right.
+L.control.zoom({ position: 'topright' }).addTo(map);
 
 const toolbar = L.control({ position: 'topleft' });
 toolbar.onAdd = () => {
-  const div = L.DomUtil.create('div', 'toolbar');
+  const outer = L.DomUtil.create('div', 'topleft-row');
+  outer.innerHTML = '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>';
+  const div = L.DomUtil.create('div', 'toolbar', outer);
   div.innerHTML =
     '<div class="toolbar-row">' +
       '<span class="toolbar-title">Which habitats are most protected?</span>' +
@@ -576,31 +569,26 @@ toolbar.onAdd = () => {
       '<ol id="results-list"></ol>' +
     '</div>';
   // Clicks and scrolling in the box don't move or zoom the map behind it.
-  L.DomEvent.disableClickPropagation(div);
-  L.DomEvent.disableScrollPropagation(div);
-  return div;
+  L.DomEvent.disableClickPropagation(outer);
+  L.DomEvent.disableScrollPropagation(outer);
+  return outer;
 };
 toolbar.addTo(map);
+legend.addTo(map);               // added after the list, so it sits right under it
 
 // The menu button opens and closes the info panel (section 11).
 document.getElementById('menu-btn').onclick = () => document.getElementById('info-panel').classList.toggle('open');
 
 // Hide or show the results list.
-function closeResults() {
-  document.getElementById('results').classList.add('hidden');
-  document.getElementById('results-toggle').textContent = '+';
-}
 document.getElementById('results-toggle').onclick = () => {
   const box = document.getElementById('results');
   const hidden = box.classList.toggle('hidden');
   document.getElementById('results-toggle').textContent = hidden ? '+' : '–';
-  if (!hidden) {                                   // opening the list closes the legend (they share the left side)
-    const lg = document.querySelector('.legend');
-    if (lg && !lg.classList.contains('collapsed')) lg.querySelector('.legend-min').click();
-  }
 };
 // the whole title bar of the list is a button too
 document.querySelector('.toolbar-title').onclick = () => document.getElementById('results-toggle').click();
+// on a big window the list starts open; on a phone or a short window it starts as one bar
+if (window.innerWidth >= 700 && window.innerHeight >= 800) document.getElementById('results-toggle').click();
 
 let highlight = null;     // the yellow outline around the habitat you clicked in the list
 let highlightLayer = null; // the habitat that outline belongs to
