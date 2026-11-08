@@ -294,3 +294,6 @@ table.glance td[class^="r-"] { font-weight: 600; text-align: center; }
 #info-panel h2 { margin-top: 18px; }
 .tabs #info-close { position: static; flex: 0 0 auto; margin-left: 6px; padding: 0 4px 4px; font-size: 26px; line-height: 1; color: #444; }
 .tabs #info-close:focus-visible { outline: 3px solid #ffb000; }
+.badge.end { background: #fcd5d1; color: #7f1d1d; }
+.badge.low { background: #e8e8e8; color: #444; }
+.badge.vul { background: #fdf0b8; color: #6b4e00; }
