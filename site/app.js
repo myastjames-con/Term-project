@@ -2,6 +2,9 @@
 // [52, -72] = latitude, longitude (roughly the middle of Québec). 5 = zoom level (bigger = closer).
 // (Once the data loads, section 6 zooms the map to fit it.)
 // The +/- zoom buttons go top left, under the menu button (added in section 10).
+const isPhone = () => window.innerWidth < 700;
+// On a phone, keep popups narrow and below the buttons at the top of the map.
+L.Popup.mergeOptions({ maxWidth: 260, autoPanPaddingTopLeft: [10, 130], autoPanPaddingBottomRight: [10, 20] });
 const map = L.map('map', { zoomControl: false }).setView([52, -72], 5);
 
 
@@ -237,7 +240,7 @@ function buildFilterBar(sites) {
     el.dataset.kind = 'unprot'; el.dataset.code = 'yes';
     el.style.setProperty('--c', '#555');
     el.title = 'Show only the habitat that no protected area covers. Click again to show all.';
-    el.innerHTML = '<span class="sw"></span>Only habitat with no protection <span class="n">' + nUn + '</span>';
+    el.innerHTML = '<span class="sw"></span>' + (window.innerWidth < 700 ? 'Unprotected only' : 'Only habitat with no protection') + ' <span class="n">' + nUn + '</span>';
     el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; setFocus(!!filters.unprot); refreshHabitat(); };
     makeButton(el);
     bar.appendChild(el);
@@ -600,6 +603,13 @@ function clearHighlight() {
   highlight = null;
   highlightLayer = null;
 }
+// On a phone the list and legend would sit on top of a popup, so fold both up when a popup opens.
+map.on('popupopen', () => {
+  if (!isPhone()) return;
+  const lg = document.querySelector('.legend');
+  if (lg && !lg.classList.contains('collapsed')) lg.querySelector('.legend-min').click();
+  if (!document.getElementById('results').classList.contains('hidden')) document.getElementById('results-toggle').click();
+});
 map.on('popupopen', e => { if (highlightLayer && e.popup._source !== highlightLayer) clearHighlight(); });
 map.on('popupclose', e => { if (highlightLayer && e.popup._source === highlightLayer) clearHighlight(); });
 

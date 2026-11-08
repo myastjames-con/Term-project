@@ -297,3 +297,56 @@ table.glance td[class^="r-"] { font-weight: 600; text-align: center; }
 .badge.end { background: #fcd5d1; color: #7f1d1d; }
 .badge.low { background: #e8e8e8; color: #444; }
 .badge.vul { background: #fdf0b8; color: #6b4e00; }
+
+/* ---- PHONE (width 700px or less): short top bar, big tap targets, full-width panel ---- */
+html, body { height: 100dvh; }                       /* dvh = the visible height, even while the phone's address bar shows */
+@media (max-width: 700px) {
+  body { font-size: 16px; }
+  #topbar { padding: 6px 10px; }
+  .bar-title { font-size: 15px; }
+  #filter-note { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-top { gap: 4px; }
+  #status { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
+  .stat { min-width: 0; padding: 3px 6px; }
+  .stat b { font-size: 15px; }
+  .stat span { font-size: 10.5px; }
+  .bar-bottom { margin-top: 6px; padding-top: 6px; gap: 6px; }
+  .chip-label { display: none; }
+  .chip { min-height: 36px; }
+  .visuals { flex: 1; min-width: 150px; }
+  .bar-bottom { flex-wrap: nowrap; }
+  .legend-hint { display: none; }
+  .topleft-row .toolbar, .leaflet-top.leaflet-left .legend { max-width: calc(100vw - 124px); }
+  .topleft-row .toolbar { width: calc(100vw - 124px); }
+  .toolbar-title { font-size: 14px; }
+  .legend { max-height: 60vh; overflow-y: auto; }
+  #topbar select { flex: 1; min-width: 0; max-width: none; min-height: 36px; font-size: 16px; }   /* 16px stops iPhones zooming in on the pull-down */
+  .leaflet-touch .leaflet-bar a { width: 40px; height: 40px; line-height: 40px; }
+  .menu-btn { min-width: 44px; min-height: 44px; }
+  .toolbar-row { min-height: 44px; }
+  .toolbar-min, .legend-min { min-width: 40px; min-height: 40px; }
+  .tab { padding: 12px 2px; font-size: 14px; }
+  #info-panel summary { padding: 6px 0; }
+  .zoom-link { min-height: 40px; }
+  .leaflet-control-attribution { font-size: 10px; }
+  .leaflet-control-scale { display: none; }
+  .facts { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .fact { padding: 5px 8px; }
+  .fact b { font-size: 17px; }
+  #info-panel { padding-left: 14px; padding-right: 14px; }
+  .tabs { margin-left: -14px; margin-right: -14px; padding: 0 14px; }
+  table.glance { font-size: 11px; }
+}
+@media (max-width: 700px) {
+  .legend-head { align-items: center; min-height: 0; }
+  .legend-min { min-height: 32px; min-width: 36px; padding: 0; line-height: 1; }
+  .legend.collapsed { padding: 4px 12px; }
+  .legend-title { font-size: 14px; }
+}
+@media (max-width: 700px) {
+  .leaflet-popup-content { font-size: 14px; line-height: 1.35; margin: 10px 12px; }
+  .leaflet-popup-content h3 { font-size: 15px; }
+  .chip { white-space: nowrap; font-size: 13px; padding-left: 8px; padding-right: 8px; }
+  .leaflet-popup-close-button { width: 32px; height: 32px; font-size: 22px; }
+}
+@media (max-width: 700px) { .visuals { min-width: 0; flex: 1 1 0; } #topbar select { width: 100%; } .chip { flex: 0 0 auto; } }
