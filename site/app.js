@@ -4,7 +4,7 @@
 // The +/- zoom buttons go top left, under the menu button (added in section 10).
 const isPhone = () => window.innerWidth < 700;
 // On a phone, keep popups narrow and below the buttons at the top of the map.
-L.Popup.mergeOptions({ maxWidth: 260, autoPanPaddingTopLeft: [10, 130], autoPanPaddingBottomRight: [10, 20] });
+L.Popup.mergeOptions({ maxWidth: 260, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, 100] });
 const map = L.map('map', { zoomControl: false }).setView([52, -72], 5);
 
 
@@ -240,7 +240,7 @@ function buildFilterBar(sites) {
     el.dataset.kind = 'unprot'; el.dataset.code = 'yes';
     el.style.setProperty('--c', '#555');
     el.title = 'Show only the habitat that no protected area covers. Click again to show all.';
-    el.innerHTML = '<span class="sw"></span>' + (window.innerWidth < 700 ? 'Unprotected only' : 'Only habitat with no protection') + ' <span class="n">' + nUn + '</span>';
+    el.innerHTML = '<span class="sw"></span>' + (window.innerWidth < 700 ? 'No protection' : 'Only habitat with no protection') + ' <span class="n">' + nUn + '</span>';
     el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; setFocus(!!filters.unprot); refreshHabitat(); };
     makeButton(el);
     bar.appendChild(el);
@@ -553,10 +553,12 @@ function addRegionButtons() {
 // The zoom buttons are top right.
 L.control.zoom({ position: 'topright' }).addTo(map);
 
-const toolbar = L.control({ position: 'topleft' });
+// On a phone the menu button is alone at the top left, and the list and legend are stacked together at the bottom.
+const menuHtml = '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>';
+const toolbar = L.control({ position: isPhone() ? 'bottomleft' : 'topleft' });
 toolbar.onAdd = () => {
   const outer = L.DomUtil.create('div', 'topleft-row');
-  outer.innerHTML = '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>';
+  if (!isPhone()) outer.innerHTML = menuHtml;
   const div = L.DomUtil.create('div', 'toolbar', outer);
   div.innerHTML =
     '<div class="toolbar-row">' +
@@ -577,8 +579,16 @@ toolbar.onAdd = () => {
   L.DomEvent.disableScrollPropagation(outer);
   return outer;
 };
-toolbar.addTo(map);
-legend.addTo(map);               // added after the list, so it sits right under it
+if (isPhone()) {
+  const menuCtl = L.control({ position: 'topleft' });
+  menuCtl.onAdd = () => { const d = L.DomUtil.create('div', 'menu-ctl'); d.innerHTML = menuHtml; L.DomEvent.disableClickPropagation(d); return d; };
+  menuCtl.addTo(map);
+  legend.addTo(map);               // bottom corner: the control added last sits on top, so the legend goes first (lowest)
+  toolbar.addTo(map);
+} else {
+  toolbar.addTo(map);
+  legend.addTo(map);               // added after the list, so it sits right under it
+}
 
 // The menu button opens and closes the info panel (section 11).
 document.getElementById('menu-btn').onclick = () => document.getElementById('info-panel').classList.toggle('open');
