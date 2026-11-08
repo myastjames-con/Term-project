@@ -32,7 +32,7 @@ baseMaps['Light map (easiest to read)'].addTo(map);
 let currentBase = baseMaps['Light map (easiest to read)'];
 (function () {
   const sel = document.getElementById('base-select');
-  Object.keys(baseMaps).forEach(name => sel.add(new Option(name, name)));
+  Object.keys(baseMaps).forEach(name => sel.add(new Option(name.replace(/ \(.*\)$/, ''), name)));   // short label, full name as the value
   sel.onchange = () => {
     map.removeLayer(currentBase);
     currentBase = baseMaps[sel.value].addTo(map);
@@ -474,7 +474,8 @@ function addSpeciesRows(list) {
   });
 }
 
-const legend = L.control({ position: 'topleft' });
+// On a phone the legend sits at the bottom, so when both cards are open the middle of the map stays visible.
+const legend = L.control({ position: isPhone() ? 'bottomleft' : 'topleft' });
 legend.onAdd = () => {
   const div = L.DomUtil.create('div', 'legend');
 
@@ -534,8 +535,8 @@ function addRegionButtons() {
   const regions = Object.keys(byRegion).sort((x, y) => byRegion[y].length - byRegion[x].length);
   const sel = document.getElementById('area-select');
   if (regions.length < 2) { sel.hidden = true; return; }          // one region: the pull-down would add nothing
-  sel.add(new Option('Zoom to: all habitat', ''));
-  regions.forEach(r => sel.add(new Option('Zoom to: ' + r + ' (' + byRegion[r].length + ')', r)));
+  sel.add(new Option('Zoom to: all', ''));
+  regions.forEach(r => sel.add(new Option(r + ' (' + byRegion[r].length + ')', r)));
   sel.onchange = () => {
     const ls = sel.value ? byRegion[sel.value] : allHabitat;
     // the ranking list is on the left, so keep the habitat clear of it
