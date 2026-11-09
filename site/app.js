@@ -16,20 +16,20 @@ const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenSt
 const baseMaps = {
   // Esri's light grey map needs no key (the CARTO one now asks for an API key). It stops at zoom 16;
   // past that Leaflet stretches the last tiles instead of showing blanks.
-  'Light map (easiest to read)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-    maxNativeZoom: 16, maxZoom: 19,
-    attribution: 'Tiles &copy; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
-  }),
   'Street map (OpenStreetMap)': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19, attribution: osmAttr
+  }),
+  'Light map (no colors)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    maxNativeZoom: 16, maxZoom: 19,
+    attribution: 'Tiles &copy; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
   }),
   'Satellite (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19, attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics'
   })
 };
-baseMaps['Light map (easiest to read)'].addTo(map);
+baseMaps['Street map (OpenStreetMap)'].addTo(map);
 // The basemap is chosen from the "Background" pull-down in the top bar (index.html).
-let currentBase = baseMaps['Light map (easiest to read)'];
+let currentBase = baseMaps['Street map (OpenStreetMap)'];
 (function () {
   const sel = document.getElementById('base-select');
   Object.keys(baseMaps).forEach(name => sel.add(new Option(name.replace(/ \(.*\)$/, ''), name)));   // short label, full name as the value
