@@ -1,5 +1,7 @@
 https://myastjames-con.github.io/Term-project/site/
 
+> The sections below were written for A2 (Montérégie, Western chorus frogs). The A3 feature, its tests and its results are at the bottom, under "A3 feature". The current map covers Québec, shows three at-risk amphibians (the Western chorus frog, the Northern spring salamander and the Allegheny Mountain dusky salamander) and ranks their habitats by how much of their area is protected.
+
 # GEOG 464 A2: Western chorus frog habitat and protected areas in Montérégie
 
 Core action: amphibian conservation groups can see which recorded Western chorus frog habitats in Montérégie overlap a protected area, and which do not.
@@ -37,7 +39,7 @@ To re-run the notebook: download the three datasets listed under "Data not inclu
 | Occurrences d'espèces en situation précaire, layer `EMVS_publique` | CDPNQ, MELCCFP, Gouvernement du Québec. https://www.donneesquebec.ca/recherche/dataset/occurrences-especes-en-situation-precaire | CC-BY 4.0 | September 29th, 2026 | Kept amphibians (matched on scientific name): 13,298 → 856 records. Clipped to Montérégie: 856 → 90 records (56 Western chorus frog). Converted from EPSG:32198 to EPSG:4326. |
 | Registre des aires protégées et des AMCE au Québec, layer `AP_REG_S` | MELCCFP, Gouvernement du Québec. https://www.donneesquebec.ca/recherche/dataset/aires-protegees-au-quebec | CC-BY 4.0 | September 29th, 2026| 5,611 areas → 266 touching Montérégie → 259 after removing plant habitat designations → 189 after removing bird, muskrat and heron designations. Converted from EPSG:32198 to EPSG:4326. |
 | Découpages administratifs, layer `regio_s` | Ministère des Ressources naturelles et des Forêts, Gouvernement du Québec. https://www.donneesquebec.ca/recherche/dataset/decoupages-administratifs | CC-BY 4.0 | September 29th, 2026 | Kept the Montérégie region (1 polygon). Converted from EPSG:4269 to EPSG:4326. |
-Basemap: © OpenStreetMap contributors.
+Basemaps: Esri, HERE, Garmin, © OpenStreetMap contributors (the light grey map, which the page starts with); © OpenStreetMap contributors (street map); Esri, Maxar, Earthstar Geographics (satellite).
 
 ## Testing
 Check cell: the last cell of the notebook tests the count (90 records, 56 chorus frogs), the projection (EPSG:4326), the area (all records inside Montérégie), the columns the page uses, and that the overlap file now agrees with the `is_protected` column. It prints `CHECK PASSED`.
@@ -72,27 +74,70 @@ I tested by running the notebook until the check cell passed. It caught that my 
 
 The topic, the scope decisions, the story on the page and the final checks were all mine. Claude suggested a sentence and sources for my lede, which I adapted. 
 
+For A3 I also asked Claude to search for the amphibians at risk in Québec and who rates them (Québec, COSEWIC, SARA and the IUCN), and to draft the species and status text in the side panel from the government pages it found. The sources are linked in the panel, and I checked the statuses against them.
+
 ## After the demo
 At my demo, I didn't have all my amphibina data in I only had Western Chorus forgs.
 Today I will make my second layer (protected areas) coloured by which year they were established so that it answer the question of which one has been there the longest. 
 
-## A3 feature: Habitats ranked by protection
-For A3 I will add a ranking list with a pull-down, so that my reader can see which habitats have the most protected area, in hectares and as a percentage.
-It has depth because it computes: the notebook measures each habitat's area and the part of it inside a conservation zone, and the list sorts habitats by those numbers.
-I will know it works when the list shows the habitats in the right order for each of the three options and clicking one shows its sizes.
-My edge case is a habitat that is not protected at all. It should not be in the "% protected" or "hectares protected" lists, but it should still be in the list ranked by habitat size.
+## A3 data update: two species, and protected areas grouped by who protects them
+**Species.** The map shows the three amphibians that Québec has designated threatened or vulnerable and that have a recorded habitat in the data: the Western chorus frog (*Pseudacris triseriata*, threatened), the Allegheny Mountain dusky salamander (*Desmognathus ochrophaeus*, Appalachian population, threatened) and the Northern spring salamander (*Gyrinophilus porphyriticus*, Adirondack / Appalachian population, vulnerable). The setting `SPECIES_STATUS` in the notebook lists them and the legal statuses (the `LOIEMV` column) that are kept. Four more amphibians are "likely to be designated" in Québec (Pickerel frog, Boreal chorus frog, Four-toed salamander and Northern dusky salamander) and are not on the map, because they have no legal status yet.
 
-Test 1. I open the page and look at the list, which is ranked by % of the habitat protected.
-  Expected: the list shows the most protected habitats first, each with its percentage and its hectares protected out of its habitat size, from the highest percentage to the lowest.
-  Result: passed. The habitats are listed from the highest percentage to the lowest.
-Test 2. I change the pull-down to "hectares protected", and then I click a habitat in the list.
-  Expected: the list re-sorts with the most hectares protected first. The map zooms to the habitat I clicked and its popup gives the hectares of the habitat, the hectares protected, the percentage and the protecting area. If I click a different habitat next, the yellow outline moves to the new one and the first answer is replaced.
-  Result: passed. The list re-sorts by hectares protected, biggest first. When I click a habitat, the map zooms to it, opens the popup and outlines it in yellow so I can see exactly where it is.
-Test 3. I change the pull-down to "habitat size" and click a habitat that has no protection.
-  Expected: the habitat is in the list, its popup says 0 ha protected (0%) and "Protected by: none", and there is no console error.
-  Result: passed. The habitat is in the list and the popup says it is not protected. There is no console error.
+**The side panel compares four ways of saying a species is at risk:** Québec law, COSEWIC, the federal *Species at Risk Act* (Schedule 1) and the IUCN Red List. For each it says who decides, how they measure, what the labels mean and what each of the three species is rated, with the year when I could confirm it. The IUCN ratings (all Least Concern) are the least checked: the IUCN website did not open for me, so I took them from Wikipedia, which cites the IUCN (2022 for the Western chorus frog). Québec's page does not give the year of each designation.
 
-  ## Pre-flight report (Lab 7)
+**Changes from the A2 feedback.** (1) Classmates found the zones hard to see against the green basemap, so Québec parks and reserves are now purple, not green, and the zone outlines are thicker. (2) Luke suggested showing the nearest protected area to an unprotected site, so the notebook now measures it (`gpd.sjoin_nearest`, in metres in EPSG:32198) and the popup of an unprotected habitat says which protected area is nearest and how far away it is. (3) The ranking list has a "See all" button under the top 10, and the light basemap makes the zones easier to see than the green street map (the layers button switches between light, street and satellite). Two more helpers for reading the map: "Show only habitat with no protection" also hides the protected areas, and there is a zoom button for each region that has habitat, since the regions are far apart. (4) The notebook simplifies the shapes (the `TOLERANCES` setting) so the page loads quickly. Not done: older data over time, iNaturalist photos, and other amphibians for contrast (see "Not in this iteration").
+
+**Area covered.** The map covers the Québec administrative regions where the three species are recorded: Outaouais (Gatineau, Shawville, Île du Grand Calumet), Montérégie (the Western chorus frog and Covey Hill), and Estrie, Chaudière-Appalaches and Centre-du-Québec (the salamanders) (the setting `STUDY_REGIONS` in the notebook; the boundaries come from `SDA.gpkg`). Habitat records and protected areas outside those regions are dropped, and the notebook prints how many records that removes.
+
+**Protected areas shown.** The frogs are recorded in a small part of Québec (Outaouais and Montérégie), so inside those regions the map only shows the protected areas within 10 km of a recorded habitat (the setting `PROTECTED_SCOPE = "near"` and `PROTECTED_NEAR_KM` in the notebook). The other protected areas in Québec are far from any frog record and only slowed the page down. The percentages are not affected: they only count protected areas that overlap a habitat, and every one of those is within 10 km by definition.
+
+**"Show only habitat with no protection."** A chip at the top shows only the habitat that no protected area covers, which is where a new conservation site would add the most. The top bar also gives three numbers: the habitat sites, how many overlap a protected area, and the share of the habitat area that is protected.
+
+**Protected area groups.** The legend groups the registry's designations by who protects the land: federal parks, reserves and measures; Québec parks and reserves; Québec forest and wildlife refuges; private and voluntary conservation; and threatened-species habitat (Québec's designation for the habitat of a threatened or vulnerable species, plus the federal Emergency Order in Longueuil). This grouping is my own reading of the designation names, not a field in the data. The rule is the `protTypes` list in `app.js`, so it can be checked and changed in one place.
+
+## A3 feature: the nearest protected area to a habitat that has no protection
+Live site: https://myastjames-con.github.io/Term-project/site/
+Repository: https://github.com/myastjames-con/Term-project
+
+**Question it answers.** A conservation group looking at a habitat with no protection needs to know where the closest protected area is and how far away. The map used to show only that a habitat was unprotected. Now the popup of an unprotected habitat says which protected area is nearest and how many km away it is. (The page also has a ranking list, "Which habitats are most protected?", and a "no protection" filter chip. The nearest-area feature is the new feature I am being marked on.)
+
+**Depth.** It computes. The notebook measures, for every habitat, the distance to the closest protected area (`gpd.sjoin_nearest`, in metres in EPSG:32198, saved as `nearest_km`) and keeps the area's name (`nearest_name`). The page then shows both in the popup. This came from Luke's suggestion on my A2 demo.
+
+### The three test cases
+Test 1. I click a Western chorus frog habitat that has no protection.
+  Expected: the popup says "Protected by: none" and adds a line "Nearest protected area: [name] ([km] km away)".
+  Result: passed. The popup for a 566.3 ha chorus frog habitat says "Nearest protected area: Boisé-Virginia (2.8 km away)".
+
+Test 2. I click a habitat that is protected.
+  Expected: the popup names the protecting area and does not show a "Nearest protected area" line, since it is already inside one.
+  Result: passed. The popup for an 821.6 ha chorus frog habitat says "Protected by: Boisé-Pierre-Dansereau (Sec. Ville de Boucherville)" and has no nearest line.
+
+Test 3 (edge case). The nearest-area information is missing for an unprotected habitat (I removed `nearest_name` and `nearest_km` from the data in the browser).
+  Expected: the popup still opens with its other facts, there is no "Nearest protected area" line, no "undefined" or "null", and no console error.
+  Result: passed. The popup shows the habitat size and "Protected by: none", with no nearest line, and the console showed no errors.
+
+I ran all three on 8 November 2026 on the real data files with the page open in a headless Chrome. In the data, 119 of 571 habitat records are protected and 452 are not, and every one of them has a `nearest_name` and a `nearest_km`.
+
+**Something the tests showed.** 6 of the 452 unprotected habitats have a nearest distance of 0.0 km, so their popup says "0 km away". The distance is measured from edge to edge, so a habitat that touches a protected area gets 0, while the notebook only counts a habitat as protected when the overlap is bigger than `MIN_OVERLAP_M2`. I have not changed this yet. It is a candidate for what I test next.
+
+### Which lines do the work
+- `notebooks/Amphibian.ipynb`, the code cell that starts with `sindex = protected_clean.sindex`, lines 26 to 31:
+  - Line 27 (`gpd.sjoin_nearest`) joins each habitat to the closest protected area and gives the distance in metres.
+  - Line 28 drops the duplicate row if two protected areas are equally near, so each habitat appears once.
+  - Lines 29 and 30 save the area's name as `nearest_name` and the distance in km, rounded to 0.1, as `nearest_km`.
+  - Line 31 prints the distances of the unprotected habitats so I can check them.
+- The next code cell (the one that starts `amph_cols = [...]`) lists `nearest_name` and `nearest_km` among the columns written to `data/amphibians.geojson`.
+- `site/app.js` line 317: the habitat popup. The condition `!p.is_protected && p.nearest_name` means the nearest-area line only appears for an unprotected habitat that has a name, which is why Test 3 shows no line and no error.
+- `site/app.js` line 675: the same information in the ranking list, where an unprotected habitat shows "(nearest protected area X km away)".
+
+### What I do not fully understand yet
+I do not fully understand how `sjoin_nearest` finds the closest polygon without measuring against all of them (I think it uses the spatial index, `sindex`, but I could not explain it). I am also not sure that a straight-line distance means much for a frog, which moves over land and water, so the page's "km away" is only a rough guide.
+
+### AI disclosure for A3
+I used Claude (Sonnet 5.5, in the Claude app). After Luke suggested showing the nearest protected area on my A2 demo, I asked Claude to help me add it. It helped me write the `sjoin_nearest` lines in the notebook. I checked the numbers in the notebook output (line 31) and in the popups.
+
+## Pre-flight report (Lab 7)
+
 | Check | Result | What I did |
 | --- | --- | --- |
 | 1. Cold start |fault: red 404 in the console from a missing frog photo | fixed in commit "Fix: no 404 for the missing frog photo" |
