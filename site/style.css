@@ -383,3 +383,12 @@ html, body { height: 100dvh; }                       /* dvh = the visible height
   #results-list { max-height: 20vh; }
   .menu-ctl .menu-btn { box-shadow: 0 1px 6px rgba(0,0,0,.3); }
 }
+
+/* ---- legend: amphibian rows are round dots that look like the dots on the map (solid species colour, white ring) ---- */
+.legend-item[data-species] .box {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--c); border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35);
+}
+.legend-item[data-species].off .box { background: #fff; border-color: #fff; box-shadow: 0 0 0 1px var(--c); }   /* hollow dot = species hidden */
+/* the example dot under the species rows uses the species colours instead of grey */
+.ring-eg { background: conic-gradient(#0072b2 0 33.3%, #d55e00 0 66.6%, #e69f00 0); }

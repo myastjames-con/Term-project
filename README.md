@@ -2,7 +2,7 @@ https://myastjames-con.github.io/Term-project/site/
 
 > The sections below were written for A2 (Montérégie, Western chorus frogs). The A3 feature, its tests and its results are at the bottom, under "A3 feature". The current map covers Québec, shows three at-risk amphibians (the Western chorus frog, the Northern spring salamander and the Allegheny Mountain dusky salamander) and ranks their habitats by how much of their area is protected.
 
-# GEOG 464 A2: Western chorus frog habitat and protected areas in Montérégie
+# GEOG 464: Threatened amphibians and protected areas in Québec (A2 map, A3 feature)
 
 Core action: amphibian conservation groups can see which recorded Western chorus frog habitats in Montérégie overlap a protected area, and which do not.
 
@@ -14,23 +14,23 @@ Core action: amphibian conservation groups can see which recorded Western chorus
 5. The data is species-at-risk occurrences, the protected areas registry and the regional boundary.
 
 ```
-term-project/
-    data/
-    monteregie_amphibians.geojson    included: amphibian records in Montérégie, with is_protected / protected_by
-    protected_monteregie.geojson     included: protected areas touching Montérégie, filtered
-    frog_protected_overlap.geojson   included: chorus frog habitat inside a protected area
-    emvs_dq.gpkg                     NOT included (over 20 MB), see "Data not included"
-    SDA.gpkg                         NOT included (over 20 MB), see "Data not included"
-    registre_aires_prot.gpkg         NOT included (over 20 MB), see "Data not included"
+Term-project/
+  data/
+    amphibians.geojson                  amphibian habitat, with is_protected, protected_by, nearest_name, nearest_km
+    protected_areas.geojson             protected areas shown on the map
+    amphibian_protected_overlap.geojson the parts of habitat inside a protected area
+    meta.json                           counts and settings written by the notebook
+    frog_protected_overlap.geojson, protected_monteregie.geojson, longueuil_order_lots.geojson   earlier (A2) files
+    *.gpkg                              NOT included (over 20 MB), see "Data not included"
   notebooks/
-    Amphibian.ipynb                  reads the data, cleans it, writes the GeoJSON files, ends with a check cell
+    Amphibian.ipynb                     reads the data, cleans it, writes the GeoJSON files, ends with a check cell
   site/
-    index.html  style.css  app.js    the page
+    index.html  style.css  app.js       the page
   README.md
 ```
 
 ## How to run it
-To view the page (no downloads needed): open `site/index.html` with Live Server (right-click, Open with Live Server). The three GeoJSON files it uses are included in `data/`.
+To view the page: open the live link at the top. The GeoJSON files it uses are included in `data/`.
 
 To re-run the notebook: download the three datasets listed under "Data not included" into `data/`, then open `notebooks/Amphibian.ipynb` and choose Run All. The last cell prints `CHECK PASSED`.
 ## Where the data comes from
@@ -134,7 +134,17 @@ I ran all three on 8 November 2026 on the real data files with the page open in 
 I do not fully understand how `sjoin_nearest` finds the closest polygon without measuring against all of them (I think it uses the spatial index, `sindex`, but I could not explain it). I am also not sure that a straight-line distance means much for a frog, which moves over land and water, so the page's "km away" is only a rough guide.
 
 ### AI disclosure for A3
-I used Claude (Sonnet 5.5, in the Claude app). After Luke suggested showing the nearest protected area on my A2 demo, I asked Claude to help me add it. It helped me write the `sjoin_nearest` lines in the notebook. I checked the numbers in the notebook output (line 31) and in the popups.
+**Tool and model.** Claude (Sonnet 5.5, in the Claude app).
+
+**What I asked for.** After Luke suggested showing the nearest protected area on my A2 demo, I asked Claude to help me add it: measure it in the notebook and show it in the popup of an unprotected habitat.
+
+**What came back.** The `sjoin_nearest` lines in the notebook (lines 26 to 31 of that cell), the popup line in `app.js` (line 317), the same information in the ranking list (line 675), and an explanation of what each line does.
+
+**What I accepted, changed or rejected.** I accepted the nearest-area lines after checking the numbers in the notebook output (line 31) and in the popups.
+
+**How the tests checked it.** I wrote the three test cases above for this feature. Claude ran them on the real data files in a headless browser, and the results above are from that run. 
+
+**What stayed mine.** The question, the choice of the three species, the story and wording on the page, what the tests should cover, and what I will test next.
 
 ## Pre-flight report (Lab 7)
 
@@ -145,8 +155,11 @@ I used Claude (Sonnet 5.5, in the Claude app). After Luke suggested showing the 
 | 3. Ask twice | fault: after picking from the list, clicking a habitat on the map left the old one outlined in yellow | fixed in commit "Fix: yellow outline stays on old answer after a map click" |
 | 4. The edge | pass: unprotected habitat shows 0 ha and "Protected by: none"; clicking empty map and a tiny habitat gave no errors | none needed |
 | 5. The data does not come | fault: if the habitat file failed to load, the page showed a developer message ("Open this page with Live Server") | fixed in commit "Fix: keyboard access, phone layout, plain-language error": the reader now sees a plain sentence and the page still works |
+| 6. On a phone | fault: the text was taking up half of the screen and my two collapsable elements (legend and question), were in from of the map and hard to read everything | I moved the legend and question to the bottom and amde the header smaller |
+| 7. Mouse in my pocket | pass: Tab reaches the menu button, filter chips, both Visuals pull-downs, legend rows and ranking card, and I can see which one is selected | none needed / fixed in commit "your commit name" |
+| 8. Accessibility audit | Lighthouse accessibility score: 98 | none needed |
 
-| 7. Mouse in my pocket | ... | ... |
-| 8. Accessibility audit | ... | ... |
+## Part 3: what I found in testing, and one fix
+The findings table is in `A3_Part3_StJames`.The most serious problem we ran into during testing was the confusing of the legend compared to the maps, since on the map the habitat sites are seen as coloured circles when they are far away, but in th legend they are just coloured squares. It is a severity 1 as they still understood everything and did not slow them down, but it would look more coherent with this change. I made the legend have coloured circles to match the map so it can look better. (the two screenshots are included in the A3_Part3_StJames docx).
 
 © 2026 Mya St-James. All rights reserved.
