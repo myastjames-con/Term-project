@@ -12,17 +12,18 @@
   <header id="topbar">
     <div class="bar-top">
       <div class="bar-id">
-        <strong class="bar-title">Threatend and Vulnerable Amphibian habitats and Protected Areas in Quebec</strong>
+        <strong class="bar-title">Threatened and Vulnerable Amphibian Habitats and Protected Areas in Québec</strong>
         <div id="filter-note"></div>
       </div>
-      <div id="status">Loading...</div>
+      <div id="status" aria-live="polite">Loading...</div>
     </div>
     <div class="bar-bottom">
       <div id="filter-bar"></div>
       <div class="visuals">
-        <span class="chip-label">Visuals:</span>
-        <select id="base-select" aria-label="Background map"></select>
-        <select id="area-select" aria-label="Zoom to an area"></select>
+        <label class="pick"><span class="chip-label">Change basemap</span>
+          <select id="base-select"></select></label>
+        <label class="pick" id="area-pick"><span class="chip-label">Zoom to region</span>
+          <select id="area-select"></select></label>
       </div>
     </div>
   </header>
@@ -59,6 +60,10 @@
     <details>
       <summary><span class="dot" data-sp="Pseudacris triseriata"></span>Western chorus frog</summary>
       <p class="small"><em>Pseudacris triseriata</em> (rainette faux-grillon de l’Ouest). Great Lakes / St. Lawrence – Canadian Shield population.</p>
+      <figure class="photo">
+        <img src="img/western-chorus-frog.jpg" alt="Photo of a Western chorus frog (Pseudacris triseriata)" loading="lazy" onerror="this.closest('figure').hidden=true">
+        <figcaption class="credit"></figcaption>
+      </figure>
 
       <div class="ratingrow">
         <span class="badge thr">Québec: threatened</span>
@@ -150,6 +155,18 @@
       </details>
 
       <details class="sub">
+        <summary>Why it matters: its role in the ecosystem</summary>
+        <div class="facts">
+          <div class="fact"><b>Grazer</b><span>Tadpoles graze algae in the ponds where they grow up (Hocking &amp; Babbitt, 2014, pp. 5–6)</span></div>
+          <div class="fact"><b>Insect eater</b><span>Adults eat insects, so pesticides that kill insects cut their food (Environment Canada, 2015)</span></div>
+          <div class="fact"><b>Prey</b><span>Eaten by insects, other amphibians, reptiles and birds (Hocking &amp; Babbitt, 2014, p. 8)</span></div>
+          <div class="fact"><b>Link</b><span>Moves energy and nutrients between ponds and land (Hocking &amp; Babbitt, 2014, pp. 8–9)</span></div>
+        </div>
+        <p><b>What its decline tells us.</b> Hocking and Babbitt (2014, p. 1) say amphibian declines “might be indicative of larger environmental problems”. For this frog the problem is easy to see: the ponds themselves are disappearing. Those wetlands also serve every other animal that uses them.</p>
+        <p class="small">The first three facts describe amphibians in general. The paper does not study this species, and says tadpoles can raise or lower algae depending on the pond (pp. 5–6).</p>
+      </details>
+
+      <details class="sub">
         <summary>What is being done</summary>
         <p><b>Already done in Québec (pp. 14–15):</b> a recovery team (1998), a provincial recovery plan (2000), 11 regional conservation plans, a standard monitoring method, a guide for building temporary wetlands, a captive-breeding program at the Montréal Biodôme and Écomuseum (2008 to 2014), outreach and stewardship agreements with landowners, and a 2001 agreement between the provincial government and Hydro-Québec.</p>
         <p><b>Places kept:</b> the Boisé du Tremblay (about 25% of the Montérégie frogs), Bois de Brossard (about 530 ha), Bois de Boucherville (about 188 ha) and Breckenridge (p. 14). Look for Bois-de-Brossard in the “most protected” list on the map.</p>
@@ -162,6 +179,10 @@
     <details>
       <summary><span class="dot" data-sp="Gyrinophilus porphyriticus"></span>Northern spring salamander</summary>
       <p class="small"><em>Gyrinophilus porphyriticus</em> (salamandre pourpre). Adirondack / Appalachian population.</p>
+      <figure class="photo">
+        <img src="img/northern-spring-salamander.jpg" alt="Photo of a Northern spring salamander (Gyrinophilus porphyriticus)" loading="lazy" onerror="this.closest('figure').hidden=true">
+        <figcaption class="credit"></figcaption>
+      </figure>
 
       <div class="ratingrow">
         <span class="badge vul">Québec: vulnerable</span>
@@ -242,6 +263,17 @@
       </details>
 
       <details class="sub">
+        <summary>Why it matters: its role in the ecosystem</summary>
+        <div class="facts">
+          <div class="fact"><b>Predator</b><span>Adults hunt insects and other small animals, sometimes smaller salamanders (COSEWIC, 2011, Biology)</span></div>
+          <div class="fact"><b>Years in water</b><span>Larvae live 3 to 6 years in cold streams, so they feel changes in the water for a long time (COSEWIC, 2011)</span></div>
+          <div class="fact"><b>Skin breather</b><span>Thin skin lets water and air in, so it dries out or suffers in acid water (COSEWIC, 2011, Biology)</span></div>
+          <div class="fact"><b>Stream link</b><span>Salamander larvae in Appalachian headwater streams supply part of the phosphorus there (Hocking &amp; Babbitt, 2014, p. 6; salamanders in general)</span></div>
+        </div>
+        <p><b>What it tells us.</b> It lives only in cold, clean, well-oxygenated streams, and COSEWIC names changes to water quality and flow as the main threat. When this salamander is lost from a stream, it is a sign the stream has changed. This last sentence is my reading of the report, not its wording.</p>
+      </details>
+
+      <details class="sub">
         <summary>What protects it</summary>
         <p><b>Law.</b> Québec designated it vulnerable in 2009. It is also protected under Québec’s wildlife law, which forbids collecting, buying, selling or keeping it in captivity. At the time of the report the federal Species at Risk Act listed it as Special Concern; your table shows the current federal status, threatened since 2017 (Protection; Environment and Climate Change Canada, n.d.).</p>
         <p><b>Land.</b> About a quarter of the sites are in three protected areas or are covered by 12 ownership agreements. That is about 127 km², or 25% of the habitat it occupies in Québec (Protection). Protective measures for stream salamanders on public forest land were adopted recently, but most of the range in southern Québec is private (Protection).</p>
@@ -253,6 +285,10 @@
     <details>
       <summary><span class="dot" data-sp="Desmognathus ochrophaeus"></span>Allegheny Mountain dusky salamander</summary>
       <p class="small"><em>Desmognathus ochrophaeus</em> (salamandre sombre des montagnes). Appalachian population.</p>
+      <figure class="photo">
+        <img src="img/allegheny-mountain-dusky-salamander.jpg" alt="Photo of a Allegheny Mountain dusky salamander (Desmognathus ochrophaeus)" loading="lazy" onerror="this.closest('figure').hidden=true">
+        <figcaption class="credit"></figcaption>
+      </figure>
 
       <div class="ratingrow">
         <span class="badge thr">Québec: threatened</span>
@@ -333,6 +369,17 @@
       </details>
 
       <details class="sub">
+        <summary>Why it matters: its role in the ecosystem</summary>
+        <div class="facts">
+          <div class="fact"><b>Hunter</b><span>Sit-and-wait hunter of small animals near its stream (COSEWIC, 2018, Biology)</span></div>
+          <div class="fact"><b>Prey</b><span>Eaten by beetles, crayfish, snakes, small mammals and birds (COSEWIC, 2018, Biology)</span></div>
+          <div class="fact"><b>Skin breather</b><span>Breathes through its skin, so it dries out easily and hides in damp places (COSEWIC, 2018, Biology)</span></div>
+          <div class="fact"><b>One water source</b><span>Every stream it lives in is fed by the same water source (COSEWIC, 2018, Assessment summary)</span></div>
+        </div>
+        <p><b>What it tells us.</b> It is a small part of the Covey Hill food web: it eats small animals and is eaten by larger ones. Because it only lives where groundwater-fed streams stay wet and clean, protecting it also protects that water. This last sentence is my reading, not a finding of the report.</p>
+      </details>
+
+      <details class="sub">
         <summary>What protects it, and what is being done</summary>
         <p><b>Law.</b> Québec lists the Appalachian population as threatened (2009). It is listed on Schedule 1 of the federal <em>Species at Risk Act</em> (first as Threatened, in 2009), and COSEWIC re-assessed it as Endangered in 2018 (Protection).</p>
         <p><b>Land.</b> Because 98% of its range is private land, protection depends a lot on landowners. The Covey Hill Natural Laboratory, set up in 2006 on private land, monitors the area’s water with hydrological stations (Habitat trends).</p>
@@ -345,7 +392,26 @@
 
     <section class="tabpane" id="tab-ratings" role="tabpanel">
     <h3 class="grp">Four ways to say a species is at risk</h3>
-    <p class="small">The four systems below do not measure the same thing, so one species can have four different labels. Québec looks at Québec, COSEWIC and SARA look at Canada, and the IUCN looks at the whole world.</p>
+    <p class="small">The systems do not measure the same thing, so one species can have four labels. Québec looks at Québec, COSEWIC and SARA at Canada, and the IUCN at the whole world.</p>
+    <table class="mini sys">
+      <tr><th>System</th><th>Who decides</th><th>Covers</th><th>Labels</th></tr>
+      <tr><td><b>Québec law</b></td><td>Québec government, after an expert committee</td><td>Québec</td><td>Threatened, Vulnerable, Likely to be designated (no legal protection yet)</td></tr>
+      <tr><td><b>COSEWIC</b></td><td>Independent experts. Advice only</td><td>Canada</td><td>Endangered, Threatened, Special Concern, Not at Risk</td></tr>
+      <tr><td><b>SARA Schedule 1</b></td><td>Federal government. The law</td><td>Canada</td><td>Extirpated, Endangered, Threatened, Special Concern</td></tr>
+      <tr><td><b>IUCN Red List</b></td><td>Specialist scientists</td><td>The whole world</td><td>Least Concern, Near Threatened, Vulnerable, Endangered, Critically Endangered, Extinct</td></tr>
+    </table>
+
+    <h3 class="grp">Our species in each system</h3>
+    <table class="mini glance">
+      <tr><th>Species</th><th>Québec</th><th>COSEWIC</th><th>SARA</th><th>IUCN</th></tr>
+      <tr><td><span class="dot" data-sp="Pseudacris triseriata"></span>Western chorus frog</td><td class="r-thr">Threatened</td><td class="r-thr">Threatened 2008</td><td class="r-thr">Threatened</td><td class="r-ok">Least concern</td></tr>
+      <tr><td><span class="dot" data-sp="Gyrinophilus porphyriticus"></span>Northern spring salamander</td><td class="r-vul">Vulnerable</td><td class="r-thr">Threatened 2011</td><td class="r-thr">Threatened 2017</td><td class="r-ok">Least concern</td></tr>
+      <tr><td><span class="dot" data-sp="Desmognathus ochrophaeus"></span>Allegheny Mountain dusky salamander</td><td class="r-thr">Threatened</td><td class="r-end">Endangered 2018</td><td class="r-end">Endangered 2021</td><td class="r-ok">Least concern</td></tr>
+    </table>
+    <p class="small">COSEWIC and SARA can be years apart: SARA adds a species to its list after a COSEWIC assessment.</p>
+
+    <details class="sub">
+    <summary>Read the details of each system</summary>
 
     <details>
       <summary>1. Québec law</summary>
@@ -378,21 +444,24 @@
       <p><b>The labels.</b> Least Concern, Near Threatened, Vulnerable, Endangered, Critically Endangered, Extinct in the Wild, Extinct (plus Data Deficient and Not Evaluated).</p>
       <p><b>Our species.</b> All three are rated Least Concern. Their populations are rare in Québec, but the species are widespread elsewhere. The Western chorus frog was assessed in 2022. I took the other ratings from Wikipedia, which cites the IUCN, because the IUCN website did not open for me, so check them on <a href="https://www.iucnredlist.org/">iucnredlist.org</a>.</p>
     </details>
+    </details>
 
     </section>
 
     <section class="tabpane" id="tab-results" role="tabpanel">
-    <h3 class="grp">Conservation sites overlapping</h3>
-    <details open>
-      <summary>Numbers for each species</summary>
-      <p class="small">All amphibians on the map. Sites = recorded habitat sites. Area protected = the share of all that habitat that lies inside a protected area.</p>
-      <div id="panel-overlap"></div>
-    </details>
+    <h3 class="grp">How much habitat is protected?</h3>
+    <div id="panel-facts" class="facts"></div>
+    <p class="small">Sites = recorded habitat sites. Protected = sites that overlap a protected area. Area protected = the share of all the habitat that lies inside a protected area.</p>
+    <div id="panel-overlap"></div>
 
-    <details>
+    <details class="sub">
       <summary>How the percentage is measured</summary>
-      <p>For each recorded habitat, the notebook measures the habitat's area in hectares and the part of it inside a protected area, then divides. Where protected areas overlap each other the area is counted once. Overlaps under 100 square metres are ignored as map slivers.</p>
-      <p>The habitat shapes are the mapped areas of each recorded occurrence, not a survey of every place the species lives.</p>
+      <ul class="small">
+        <li>The notebook measures each habitat in hectares and the part inside a protected area, then divides.</li>
+        <li>Where protected areas overlap each other the area is counted once.</li>
+        <li>Overlaps under 100 square metres are ignored as map slivers.</li>
+        <li>The habitat shapes are the mapped areas of each record, not a survey of everywhere the species lives.</li>
+      </ul>
     </details>
     </section>
 
@@ -401,13 +470,14 @@
     <details open>
       <summary>Data, basemaps and references</summary>
       <h3>Where the data comes from</h3>
-        <ul>
-  <li><a href="https://www.donneesquebec.ca/recherche/dataset/occurrences-especes-en-situation-precaire">Occurrences d’espèces en situation précaire</a>, CDPNQ, MELCCFP, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Kept three amphibians at their Québec legal status: the Western chorus frog and the Allegheny Mountain dusky salamander (threatened) and the Northern spring salamander (vulnerable). Area shown on the map:<span id="scope-note"> see the notebook</span>.</li>
-  <li><a href="https://www.donneesquebec.ca/recherche/dataset/aires-protegees-au-quebec">Registre des aires protégées et des AMCE au Québec</a>, MELCCFP, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Removed plant, bird, muskrat and heron habitat designations, and kept the others, then added the Emergency Order lots in Longueuil (Canada Gazette, SOR/2021-231). The legend groups the areas by who protects them (federal, Québec, private, threatened-species habitat); that grouping is my reading of the designation names. Shapes are simplified slightly so the page loads quickly.</li>
-  <li><a href="https://www.donneesquebec.ca/recherche/dataset/decoupages-administratifs">Découpages administratifs</a>, Ministère des Ressources naturelles et des Forêts, Gouvernement du Québec, <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>, accessed September 29th, 2026. Used for the boundaries of the regions the map covers.</li>
-  <li>Species status information from the sources listed under References.</li>
-  <li>Basemaps: light map Esri, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors; street map © OpenStreetMap contributors; satellite Esri, Maxar, Earthstar Geographics.</li>
-</ul>
+      <table class="mini sys">
+        <tr><th>Data</th><th>From</th><th>What I did</th></tr>
+        <tr><td><a href="https://www.donneesquebec.ca/recherche/dataset/occurrences-especes-en-situation-precaire">Occurrences d’espèces en situation précaire</a></td><td>CDPNQ, MELCCFP, Gouvernement du Québec. <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>. Accessed September 29th, 2026</td><td>Kept three amphibians at their Québec legal status. Area shown:<span id="scope-note"> see the notebook</span></td></tr>
+        <tr><td><a href="https://www.donneesquebec.ca/recherche/dataset/aires-protegees-au-quebec">Registre des aires protégées et des AMCE au Québec</a></td><td>MELCCFP, Gouvernement du Québec. <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>. Accessed September 29th, 2026</td><td>Removed plant, bird, muskrat and heron designations. Added the Emergency Order lots in Longueuil (Canada Gazette, SOR/2021-231). Grouped the areas by who protects them (my reading of the names). Simplified the shapes slightly</td></tr>
+        <tr><td><a href="https://www.donneesquebec.ca/recherche/dataset/decoupages-administratifs">Découpages administratifs</a></td><td>Ministère des Ressources naturelles et des Forêts, Gouvernement du Québec. <a href="https://www.donneesquebec.ca/licence/#cc-by">CC-BY 4.0</a>. Accessed September 29th, 2026</td><td>Used for the boundaries of the regions the map covers</td></tr>
+      </table>
+      <p class="small">Species status information is from the sources under References.</p>
+      <p class="small"><b>Basemaps:</b> light map Esri, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors; street map © OpenStreetMap contributors; satellite Esri, Maxar, Earthstar Geographics.</p>
       <h3>References</h3>
         <ul class="refs">
         <li>Environment and Climate Change Canada. (n.d.). <em>Western chorus frog (Great Lakes / St. Lawrence – Canadian Shield population)</em> [Species profile]. Species at Risk Public Registry. Retrieved October 21, 2026, from <a href="https://species-registry.canada.ca/index-en.html#/species/668-0">https://species-registry.canada.ca/index-en.html#/species/668-0</a></li>

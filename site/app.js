@@ -49,7 +49,10 @@ let currentBase = baseMaps['Street map (OpenStreetMap)'];
 map.createPane('habitatPane');   map.getPane('habitatPane').style.zIndex = 400;
 map.createPane('protectedPane'); map.getPane('protectedPane').style.zIndex = 450;
 map.createPane('overlapPane');   map.getPane('overlapPane').style.zIndex = 500;
+map.createPane('squarePane');    map.getPane('squarePane').style.zIndex = 590;  // purple squares for protected areas (below the dots)
 map.createPane('dotPane');       map.getPane('dotPane').style.zIndex = 600;     // the dots (section 4) sit above everything
+map.createPane('regionPane');    map.getPane('regionPane').style.zIndex = 610;  // the red outline of a region
+map.getPane('regionPane').style.pointerEvents = 'none';
 
 
 // 4. SETTINGS FOR THE LAYERS
@@ -165,14 +168,18 @@ let allHabitat = [];                       // every habitat shape, shown or not
 // DOTS. Many habitats are tiny, so zoomed out their shapes are almost invisible. Each habitat also gets a dot
 // at its centre while the map is zoomed out (zoom 12 or less). The dot is in the species colour. A dark-purple
 // ring means the habitat overlaps a protected area, a white ring means it does not. A dot opens the same popup.
-const DOT_MAX_ZOOM = 12;
+const DOT_MAX_ZOOM = 10;                    // above this zoom the dots and squares are gone and only the shapes show
+// The dot and the square get smaller as you zoom in. The square is bigger than the dot, so a protected habitat
+// shows as a dot inside a purple square.
+const dotRadius = z => Math.max(2, 3.5 - (z - 5) * 0.3);
+const squareSize = z => Math.max(6, 9 - (z - 5) * 0.6);
 const dotGroup = L.layerGroup();
 const dotOf = new Map();                   // habitat shape -> its dot
 function makeDots() {
   allHabitat.forEach(l => {
     const p = l.feature.properties;
     const dot = L.circleMarker(l.getBounds().getCenter(), {
-      pane: 'dotPane', radius: 7, weight: p.is_protected ? 3 : 2, color: p.is_protected ? '#3f007d' : '#ffffff',
+      pane: 'dotPane', radius: dotRadius(map.getZoom()), weight: p.is_protected ? 2 : 1.5, color: p.is_protected ? '#3f007d' : '#ffffff',
       fillColor: colourFor(p.SNAME), fillOpacity: 1
     });
     dot.on('click', () => l.openPopup(dot.getLatLng()));
@@ -181,9 +188,13 @@ function makeDots() {
 }
 function syncDots() {
   const zoomedOut = map.getZoom() <= DOT_MAX_ZOOM;
+  const r = dotRadius(map.getZoom());
+  map.getPane('squarePane').style.setProperty('--sq', squareSize(map.getZoom()) + 'px');
+  if (typeof syncSquares === 'function') syncSquares();
   allHabitat.forEach(l => {
     const dot = dotOf.get(l);
     if (!dot) return;
+    dot.setRadius(r);
     const want = zoomedOut && groups.habitat.hasLayer(l);
     if (want && !dotGroup.hasLayer(dot)) dotGroup.addLayer(dot);
     if (!want && dotGroup.hasLayer(dot)) dotGroup.removeLayer(dot);
@@ -259,6 +270,7 @@ function setFocus(on) {
   }
   const lg = document.querySelector('.legend');
   if (lg) lg.classList.toggle('focus', on);
+  if (typeof syncSquares === 'function') syncSquares();
 }
 
 
@@ -401,7 +413,33 @@ function setProtType(id, on) {
   (protLayers[id] || []).forEach(l => on ? groups.protected.addLayer(l) : groups.protected.removeLayer(l));
   on ? hiddenTypes.delete(id) : hiddenTypes.add(id);
   document.querySelector('.legend-item[data-ptype="' + id + '"]').classList.toggle('off', !on);
+  syncSquares();
 }
+
+// PURPLE SQUARES. Zoomed out, a protected area is a few pixels wide and hard to see, so each one also gets a small
+// square (in its legend colour) at its centre. The squares go away at the same zoom as the dots.
+const squareGroup = L.layerGroup().addTo(map);
+const squareOf = new Map();                 // protected shape -> { square, type id }
+function makeSquares() {
+  groups.protected.eachLayer(l => {
+    const p = l.feature.properties, t = protTypeOf(p.DESIGNOM);
+    const sq = L.marker(l.getBounds().getCenter(), {
+      pane: 'squarePane', keyboard: false, title: p.NOM || 'Protected area',
+      icon: L.divIcon({ className: 'prot-sq-icon', html: '<span class="prot-sq" style="background:' + t.color + '"></span>', iconSize: [0, 0] })
+    });
+    sq.on('click', () => l.openPopup(sq.getLatLng()));
+    squareOf.set(l, { sq: sq, id: t.id });
+  });
+}
+function syncSquares() {
+  const want0 = map.getZoom() <= DOT_MAX_ZOOM && groups.protected && map.hasLayer(groups.protected);
+  squareOf.forEach(v => {
+    const want = want0 && !hiddenTypes.has(v.id);
+    if (want && !squareGroup.hasLayer(v.sq)) squareGroup.addLayer(v.sq);
+    if (!want && squareGroup.hasLayer(v.sq)) squareGroup.removeLayer(v.sq);
+  });
+}
+map.on('zoomend', syncSquares);
 
 addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles.protected, protPopup, undefined,
   data => {
@@ -418,6 +456,8 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
       (protLayers[t.id] = protLayers[t.id] || []).push(l);
       counts[t.id] = (counts[t.id] || 0) + 1;
     });
+    makeSquares();
+    syncDots();
     // one legend row per type that is in the data
     const box = document.getElementById('legend-protected');
     protTypes.filter(t => counts[t.id]).forEach(t => {
@@ -484,8 +524,10 @@ legend.onAdd = () => {
              '<button class="legend-min" title="Minimize" aria-label="Minimize legend">–</button></div>' +
              '<div class="legend-body">' +
              '<div class="legend-sub">Amphibian habitat</div><div id="legend-species"></div>' +
-             '<div class="legend-note"><span class="ring-eg"></span> Dot = one site. Purple ring = protected.</div>' +
-             '<div class="legend-sub">Protected areas</div><div id="legend-protected"></div>';
+             '<div class="legend-note"><span class="ring-eg"></span> Round dot = one habitat site. Purple ring = it overlaps a protected area.</div>' +
+             '<div class="legend-sub">Protected areas</div>' +
+             '<div class="legend-note"><span class="sq-eg"></span> Purple square = one protected area (shown when zoomed out).</div>' +
+             '<div id="legend-protected"></div>';
   legendSections.forEach(s => {
     html += '<div class="legend-sub">' + s.title + '</div>';        // section subtitle
     s.items.forEach(i => {
@@ -506,10 +548,14 @@ legend.onAdd = () => {
   // Minimize / expand button: hides the rows and swaps – and +.
   const btn = div.querySelector('.legend-min');
   if (div.classList.contains('collapsed')) btn.textContent = '+';
+  btn.setAttribute('aria-expanded', !div.classList.contains('collapsed'));
   btn.onclick = () => {
     const c = div.classList.toggle('collapsed');
     btn.textContent = c ? '+' : '–';
+    btn.setAttribute('aria-expanded', !c);
   };
+  // the word "Legend" opens and closes it too, not only the + button
+  div.querySelector('.legend-title').onclick = () => btn.click();
 
   // Clicking a row turns its layer on or off. The box goes hollow when it's off.
   div.querySelectorAll('.legend-item[data-key]').forEach(el => {
@@ -527,21 +573,68 @@ legend.onAdd = () => {
 };
 
 
-// "Go to" pull-down in the top bar: zoom to each region that has habitat (the notebook writes the region of each record).
+// "Zoom to region" pull-down in the top bar: zoom to each region that has habitat (the notebook writes the region of each record).
 // The regions can be far apart, so with all of them in view each one is small.
+// When you pick a region it gets a red outline. The outline is the real regional boundary if data/regions.geojson
+// exists (the notebook writes it). If that file is missing, it is drawn from the habitat records instead (dashed).
+let regionOutline = null;
+let regionToken = 0;                         // a newer pick cancels an older one that is still loading
+let regionFile = null;                       // the promise for regions.geojson, loaded once
+const plain = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const loadRegionFile = () => regionFile || (regionFile = fetch('../data/regions.geojson').then(r => r.ok ? r.json() : null).catch(() => null));
+// Convex hull (the smallest outline that contains every point), used when the boundary file is missing.
+function hullOf(pts) {
+  pts = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const build = list => { const h = []; list.forEach(p => { while (h.length > 1 && cross(h[h.length - 2], h[h.length - 1], p) <= 0) h.pop(); h.push(p); }); h.pop(); return h; };
+  return build(pts).concat(build(pts.slice().reverse()));
+}
+function clearRegionOutline() {
+  regionToken++;
+  if (regionOutline) map.removeLayer(regionOutline);
+  regionOutline = null;
+  const note = document.getElementById('filter-note');
+  if (note && note.dataset.keep != null) { note.textContent = note.dataset.keep; delete note.dataset.keep; }
+}
+function showRegion(name, layers, fit) {
+  clearRegionOutline();
+  const token = regionToken;
+  loadRegionFile().then(data => {
+    if (token !== regionToken) return;
+    let shape = null, official = false;
+    const feats = data ? data.features.filter(f => { const n = plain(f.properties.name); return n && (n.includes(plain(name)) || plain(name).includes(n)); }) : [];
+    if (feats.length) { shape = { type: 'FeatureCollection', features: feats }; official = true; }
+    else {
+      const pts = [];
+      layers.forEach(l => (function walk(a) { a.forEach(x => Array.isArray(x) ? walk(x) : pts.push([x.lng, x.lat])); })(l.getLatLngs()));
+      const h = hullOf(pts);
+      if (h.length >= 3) shape = { type: 'Feature', geometry: { type: 'Polygon', coordinates: [h.concat([h[0]])] } };
+    }
+    if (!shape) { fit(L.featureGroup(layers).getBounds()); return; }
+    regionOutline = L.geoJSON(shape, { pane: 'regionPane', interactive: false,
+      style: { color: '#d7191c', weight: 3, dashArray: official ? null : '9 6', fillColor: '#d7191c', fillOpacity: 0.05 } }).addTo(map);
+    const note = document.getElementById('filter-note');
+    if (note) {
+      note.dataset.keep = note.textContent;
+      note.textContent = 'Red outline: ' + name + (official ? ' region.' : ' (drawn around its habitat records, not the official boundary).');
+    }
+    fit(official ? regionOutline.getBounds() : L.featureGroup(layers).getBounds().extend(regionOutline.getBounds()));
+  });
+}
 function addRegionButtons() {
   const byRegion = {};
   allHabitat.forEach(l => { const r = l.feature.properties.region || 'Other'; (byRegion[r] = byRegion[r] || []).push(l); });
   const regions = Object.keys(byRegion).sort((x, y) => byRegion[y].length - byRegion[x].length);
   const sel = document.getElementById('area-select');
-  if (regions.length < 2) { sel.hidden = true; return; }          // one region: the pull-down would add nothing
-  sel.add(new Option('Zoom to: all', ''));
+  if (regions.length < 2) { document.getElementById('area-pick').hidden = true; return; }   // one region: the pull-down would add nothing
+  sel.add(new Option('All regions', ''));
   regions.forEach(r => sel.add(new Option(r + ' (' + byRegion[r].length + ')', r)));
+  // the ranking list is on the left, so keep the habitat clear of it
+  const fit = (bounds, maxZoom) => map.fitBounds(bounds, {
+    paddingTopLeft: [window.innerWidth < 700 ? 20 : 380, 60], paddingBottomRight: [60, 60], maxZoom: maxZoom || 13 });
   sel.onchange = () => {
-    const ls = sel.value ? byRegion[sel.value] : allHabitat;
-    // the ranking list is on the left, so keep the habitat clear of it
-    map.fitBounds(L.featureGroup(ls).getBounds(), {
-      paddingTopLeft: [window.innerWidth < 700 ? 20 : 380, 60], paddingBottomRight: [60, 60], maxZoom: 13 });
+    if (!sel.value) { clearRegionOutline(); fit(L.featureGroup(allHabitat).getBounds()); return; }
+    showRegion(sel.value, byRegion[sel.value], b => fit(b));
   };
 }
 
@@ -554,11 +647,10 @@ function addRegionButtons() {
 L.control.zoom({ position: 'topright' }).addTo(map);
 
 // On a phone the menu button is alone at the top left, and the list and legend are stacked together at the bottom.
-const menuHtml = '<button class="menu-btn" id="menu-btn" title="About these amphibians" aria-label="Open the information panel">&#9776;</button>';
+const menuHtml = '<button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="info-panel"><span class="menu-icon" aria-hidden="true">&#9776;</span><span class="menu-text">Learn about the amphibians and data</span></button>';
 const toolbar = L.control({ position: isPhone() ? 'bottomleft' : 'topleft' });
 toolbar.onAdd = () => {
   const outer = L.DomUtil.create('div', 'topleft-row');
-  if (!isPhone()) outer.innerHTML = menuHtml;
   const div = L.DomUtil.create('div', 'toolbar', outer);
   div.innerHTML =
     '<div class="toolbar-row">' +
@@ -571,6 +663,7 @@ toolbar.onAdd = () => {
         '<option value="ha">hectares protected</option>' +
         '<option value="size">habitat size</option>' +
       '</select></label>' +
+      '<details class="sp-pick" id="sp-pick"><summary id="sp-summary">Amphibians: all</summary><div class="sp-list" id="sp-list"></div></details>' +
       '<div class="results-note" id="results-note"></div>' +
       '<ol id="results-list"></ol>' +
     '</div>';
@@ -579,10 +672,11 @@ toolbar.onAdd = () => {
   L.DomEvent.disableScrollPropagation(outer);
   return outer;
 };
+// the "Learn about the amphibians and data" button is the first control at the top left, on every screen size
+const menuCtl = L.control({ position: 'topleft' });
+menuCtl.onAdd = () => { const d = L.DomUtil.create('div', 'menu-ctl'); d.innerHTML = menuHtml; L.DomEvent.disableClickPropagation(d); return d; };
+menuCtl.addTo(map);
 if (isPhone()) {
-  const menuCtl = L.control({ position: 'topleft' });
-  menuCtl.onAdd = () => { const d = L.DomUtil.create('div', 'menu-ctl'); d.innerHTML = menuHtml; L.DomEvent.disableClickPropagation(d); return d; };
-  menuCtl.addTo(map);
   legend.addTo(map);               // bottom corner: the control added last sits on top, so the legend goes first (lowest)
   toolbar.addTo(map);
 } else {
@@ -591,13 +685,18 @@ if (isPhone()) {
 }
 
 // The menu button opens and closes the info panel (section 11).
-document.getElementById('menu-btn').onclick = () => document.getElementById('info-panel').classList.toggle('open');
+function setPanelOpen(open) {
+  document.getElementById('info-panel').classList.toggle('open', open);
+  document.getElementById('menu-btn').setAttribute('aria-expanded', open);
+}
+document.getElementById('menu-btn').onclick = () => setPanelOpen(!document.getElementById('info-panel').classList.contains('open'));
 
 // Hide or show the results list.
 document.getElementById('results-toggle').onclick = () => {
   const box = document.getElementById('results');
   const hidden = box.classList.toggle('hidden');
   document.getElementById('results-toggle').textContent = hidden ? '+' : '–';
+  document.getElementById('results-toggle').setAttribute('aria-expanded', !hidden);
 };
 // the whole title bar of the list is a button too
 document.querySelector('.toolbar-title').onclick = () => document.getElementById('results-toggle').click();
@@ -642,6 +741,36 @@ function setUpSearch() {
     size: (a, b) => b.p.habitat_ha - a.p.habitat_ha
   };
 
+  // The amphibian pull-down: tick the amphibians you want in the list, or "All amphibians".
+  const spNames = new Map();
+  records.forEach(r => spNames.set(r.p.SNAME, String(r.p.GCOMNAME || r.p.SCOMNAME || r.p.SNAME).replace(/\s[-–]\s.*$/, '')));
+  const chosen = new Set(spNames.keys());
+  const spList = document.getElementById('sp-list');
+  const allLab = document.createElement('label'); allLab.className = 'sp-row sp-all';
+  const allBox = document.createElement('input'); allBox.type = 'checkbox'; allBox.checked = true;
+  allLab.append(allBox, document.createTextNode(' All amphibians'));
+  spList.appendChild(allLab);
+  const spBoxes = [];
+  spNames.forEach((name, sname) => {
+    const lab = document.createElement('label'); lab.className = 'sp-row';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = true; cb.value = sname;
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = colourFor(sname);
+    lab.append(cb, dot, document.createTextNode(name));
+    cb.onchange = () => { cb.checked ? chosen.add(sname) : chosen.delete(sname); spChanged(); };
+    spBoxes.push(cb); spList.appendChild(lab);
+  });
+  allBox.onchange = () => {
+    spBoxes.forEach(cb => { cb.checked = allBox.checked; allBox.checked ? chosen.add(cb.value) : chosen.delete(cb.value); });
+    spChanged();
+  };
+  function spChanged() {
+    allBox.checked = chosen.size === spNames.size;
+    allBox.indeterminate = chosen.size > 0 && chosen.size < spNames.size;
+    document.getElementById('sp-summary').textContent = 'Amphibians: ' +
+      (chosen.size === spNames.size ? 'all' : chosen.size === 0 ? 'none' : chosen.size === 1 ? spNames.get([...chosen][0]) : chosen.size + ' of ' + spNames.size);
+    showAll = false; render(); list.scrollTop = 0;
+  }
+
   // The list shows the top 10. The button under it shows every habitat, and back again.
   let showAll = false;
   const more = document.createElement('button');
@@ -651,12 +780,12 @@ function setUpSearch() {
   more.onclick = () => { showAll = !showAll; render(); };
 
   function render() {
-    let rows = records.slice();
+    let rows = records.filter(r => chosen.has(r.p.SNAME));
     // Show only habitats that have some protection (unless ranking by size).
     if (rank.value !== 'size') rows = rows.filter(r => r.p.is_protected);
     rows.sort(sorters[rank.value]);
 
-    note.textContent = rows.length === 0 ? 'No habitat to show.' :
+    note.textContent = chosen.size === 0 ? 'Tick at least one amphibian.' : rows.length === 0 ? 'No habitat to show.' :
       rows.length + (rank.value === 'size' ? ' habitats' : ' habitats have some protection') +
       (rows.length > 10 && !showAll ? ' (top 10 shown)' : '');
 
@@ -733,8 +862,37 @@ document.querySelectorAll('#info-panel .zoom-link').forEach(b => {
   };
 });
 
-document.getElementById('info-close').onclick = () => panel.classList.remove('open');
-document.addEventListener('keydown', e => { if (e.key === 'Escape') panel.classList.remove('open'); });
+document.getElementById('info-close').onclick = () => setPanelOpen(false);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setPanelOpen(false); });
+
+// A drag bar on the right edge of the panel makes it wider or narrower (arrow keys work too). Not on a phone, where it is full width.
+const mapBox = map.getContainer();
+const handle = document.createElement('div');
+handle.id = 'panel-resize';
+handle.setAttribute('role', 'separator'); handle.setAttribute('aria-orientation', 'vertical');
+handle.setAttribute('aria-label', 'Panel width. Drag, or use the left and right arrow keys');
+handle.title = 'Drag to make the panel wider or narrower';
+handle.tabIndex = 0;
+mapBox.appendChild(handle);
+L.DomEvent.disableClickPropagation(handle);
+function setPanelWidth(w) {
+  w = Math.max(340, Math.min(w, Math.min(900, mapBox.clientWidth * 0.9)));
+  mapBox.style.setProperty('--panel-w', w + 'px');
+  handle.setAttribute('aria-valuenow', Math.round(w));
+  try { localStorage.setItem('panelWidth', Math.round(w)); } catch (e) {}
+}
+try { const saved = Number(localStorage.getItem('panelWidth')); if (saved) setPanelWidth(saved); } catch (e) {}
+let resizing = false;
+handle.addEventListener('pointerdown', e => { resizing = true; handle.setPointerCapture(e.pointerId); mapBox.classList.add('resizing'); e.preventDefault(); });
+handle.addEventListener('pointermove', e => { if (resizing) setPanelWidth(e.clientX - mapBox.getBoundingClientRect().left); });
+const stopResize = () => { resizing = false; mapBox.classList.remove('resizing'); };
+handle.addEventListener('pointerup', stopResize);
+handle.addEventListener('pointercancel', stopResize);
+handle.addEventListener('keydown', e => {
+  const w = panel.getBoundingClientRect().width;
+  if (e.key === 'ArrowRight') { setPanelWidth(w + 30); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { setPanelWidth(w - 30); e.preventDefault(); }
+});
 
 // Fills the "Conservation sites overlapping" section from the data: one row per species,
 // then the protected areas that overlap the most habitat sites.
@@ -758,11 +916,19 @@ function fillPanel(sites) {
   html += '</table>';
   const top = [...areas.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
   if (top.length) {
-    html += '<p class="small">Protected areas that overlap the most habitat sites:</p><ul class="small">';
-    top.forEach(([name, n]) => { html += '<li>' + esc(name) + ' (' + n + ')</li>'; });
-    html += '</ul>';
+    html += '<h3 class="grp">Protected areas that overlap the most habitat sites</h3><table class="mini sys"><tr><th>Protected area</th><th>Sites</th></tr>';
+    top.forEach(([name, n]) => { html += '<tr><td>' + esc(name) + '</td><td>' + n + '</td></tr>'; });
+    html += '</table>';
   }
   document.getElementById('panel-overlap').innerHTML = html;
+  const totalHa = sites.reduce((t, f) => t + (f.properties.habitat_ha || 0), 0);
+  const protHa = sites.reduce((t, f) => t + (f.properties.protected_ha || 0), 0);
+  const nProt = sites.filter(f => f.properties.is_protected).length;
+  const card = (n, text, bad) => '<div class="fact' + (bad ? ' bad' : '') + '"><b>' + n + '</b><span>' + text + '</span></div>';
+  document.getElementById('panel-facts').innerHTML =
+    card(sites.length, 'habitat sites on the map') +
+    card(nProt, 'sites overlap a protected area') +
+    card(num(totalHa ? 100 * protHa / totalHa : 0, 1) + '%', 'of all the habitat area is protected', true);
   // the colour dots next to the species names in the panel match the legend
   document.querySelectorAll('#info-panel .dot[data-sp]').forEach(d => { 
     d.style.background = colourFor(d.dataset.sp);

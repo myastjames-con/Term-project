@@ -113,7 +113,7 @@ a { color: var(--accent); }
 /* info panel: slides in from the left over the map */
 #info-panel {
   position: absolute; top: 0; left: 0; bottom: 0;
-  width: 500px; max-width: 92%;     /* wider than the search box, so the box is fully covered */
+  width: var(--panel-w, 500px); max-width: 92%;     /* --panel-w is set by the drag bar (app.js); 500px until then */
   box-sizing: border-box;
   padding: 56px 18px 18px;
   overflow-y: auto;
@@ -384,11 +384,120 @@ html, body { height: 100dvh; }                       /* dvh = the visible height
   .menu-ctl .menu-btn { box-shadow: 0 1px 6px rgba(0,0,0,.3); }
 }
 
-/* ---- legend: amphibian rows are round dots that look like the dots on the map (solid species colour, white ring) ---- */
+
+/* ================= round 5 ================= */
+
+/* ---- top bar: bigger title, and on a laptop it stays on top in one tidy block ---- */
+.bar-title { font-size: clamp(21px, 2vw, 26px); line-height: 1.2; }
+#filter-note { font-size: 14px; line-height: 1.35; }
+.visuals { gap: 14px; }
+.pick { display: inline-flex; align-items: center; gap: 6px; }
+.pick .chip-label { margin: 0; }
+.pick[hidden] { display: none; }
+@media (min-width: 701px) {
+  .bar-top { flex-wrap: nowrap; align-items: flex-start; gap: 12px 20px; }
+  .bar-id { flex: 1 1 0; min-width: 0; }
+  #status { flex: none; flex-wrap: nowrap; }
+  .stat { min-width: 0; padding: 3px 10px; }
+  .bar-bottom { margin-top: 6px; padding-top: 6px; }
+}
+@media (min-width: 701px) and (max-width: 1150px) {
+  #topbar { padding: 8px 12px 6px; }
+  .stat b { font-size: 17px; }
+  .stat span { font-size: 11px; }
+  #filter-note { font-size: 13px; }
+  .pick .chip-label { font-size: 11px; }
+  #topbar select { max-width: 150px; }
+}
+@media (min-width: 701px) and (max-height: 760px) {
+  #topbar { padding-top: 6px; padding-bottom: 4px; }
+  #filter-note { display: none; }          /* on a short screen the map matters more than the note */
+}
+
+/* ---- the "Learn about the amphibians and data" button (top left, every screen size) ---- */
+.menu-ctl .menu-btn {
+  display: flex; align-items: center; gap: 10px; width: auto; height: auto; min-height: 44px;
+  border-radius: 24px; padding: 6px 18px 6px 14px; text-align: left;
+  font: 700 15px/1.25 system-ui, sans-serif; color: var(--accent); border: 2px solid var(--accent);
+}
+.menu-ctl .menu-btn:hover { background: #eef3ea; }
+.menu-icon { font-size: 20px; line-height: 1; }
+.menu-text { white-space: normal; }
+.topleft-row .toolbar { width: 400px; }
+.leaflet-top.leaflet-left .legend { width: 400px; margin: 0 0 10px 10px; }
+.legend-title { cursor: pointer; }
+.toolbar-title:hover, .legend-title:hover { text-decoration: underline; }
+/* if the menu button, the ranking card and the legend are all open and the window is short, the left column scrolls so nothing is cut off */
+@media (min-width: 701px) {
+  .leaflet-top.leaflet-left { max-height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+}
+
+/* ---- map symbols: small dots, purple squares ---- */
+.prot-sq-icon { background: none; border: 0; }
+.prot-sq { position: absolute; display: block; box-sizing: border-box;
+  width: var(--sq, 9px); height: var(--sq, 9px); margin: calc(var(--sq, 9px) / -2) 0 0 calc(var(--sq, 9px) / -2);
+  border: 1.5px solid #3f007d; box-shadow: 0 0 0 1px rgba(255,255,255,.85); }
+.leaflet-pane { --sq: 9px; }
+.sq-eg { display: inline-block; width: 11px; height: 11px; box-sizing: border-box; background: #8c6bb1; border: 1.5px solid #3f007d; vertical-align: -1px; margin-right: 2px; }
+
+/* ---- ranking card: amphibian pull-down ---- */
+.sp-pick { margin: 6px 0 4px; font-size: 13px; }
+.sp-pick > summary { cursor: pointer; list-style: none; display: inline-block; padding: 4px 28px 4px 10px; border: 1.5px solid var(--accent); border-radius: 16px;
+  color: var(--accent); font-weight: 600; background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'><path d='M2 2l6 6 6-6' fill='none' stroke='%23264820' stroke-width='2.5' stroke-linecap='round'/></svg>") no-repeat right 9px center / 11px; }
+.sp-pick > summary::-webkit-details-marker { display: none; }
+.sp-list { margin-top: 4px; padding: 4px 8px; border: 1px solid #d9ddd5; border-radius: 8px; background: #fcfdfb; }
+.sp-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; cursor: pointer; }
+.sp-row input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+.sp-all { font-weight: 700; border-bottom: 1px solid #e5e5e5; margin-bottom: 2px; }
+.sp-pick summary:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
+
+/* ---- adjustable side panel ---- */
+#panel-resize { position: absolute; top: 0; bottom: 0; left: calc(var(--panel-w, 500px) - 7px); width: 14px; z-index: 1003;
+  cursor: col-resize; touch-action: none; display: none; }
+#panel-resize::before { content: ""; position: absolute; top: 50%; left: 4px; width: 6px; height: 56px; margin-top: -28px;
+  border-radius: 3px; background: var(--accent); opacity: .55; box-shadow: 0 0 0 2px #fff; }
+#panel-resize:hover::before, #panel-resize:focus-visible::before { opacity: 1; }
+#panel-resize:focus-visible { outline: 3px solid #1a5fb4; }
+#info-panel.open + #panel-resize { display: block; }
+#info-panel { max-width: calc(100% - 50px); }
+.resizing { cursor: col-resize; user-select: none; }
+.resizing #info-panel { transition: none; }
+@media (max-width: 700px) { #info-panel.open + #panel-resize { display: none; } #info-panel { max-width: 100%; } }
+
+/* ---- photos and tables in the panel ---- */
+.photo { margin: 8px 0 4px; }
+.photo img { display: block; width: 100%; max-height: 240px; object-fit: cover; border-radius: 8px; background: #eef3ea; }
+.credit:empty { display: none; }
+.photo .credit { font-size: 12px; color: #555; margin-top: 4px; }
+table.sys th, table.sys td { text-align: left !important; vertical-align: top; padding: 5px 6px; }
+table.sys { font-size: 12.5px; }
+#panel-facts { grid-template-columns: repeat(3, 1fr); }
+#panel-facts .fact b { font-size: 18px; }
+#info-panel ul.small li { margin-bottom: 3px; }
+
+/* ---- phone: labels above the two pull-downs, bigger title ---- */
+@media (max-width: 700px) {
+  .bar-title { font-size: 18px; }
+  #filter-note { font-size: 12px; }
+  .visuals { gap: 8px; }
+  .pick { flex: 1 1 0; flex-direction: column; align-items: stretch; gap: 2px; min-width: 0; }
+  .pick .chip-label { display: block; font-size: 11px; }
+  .menu-ctl .menu-btn { font-size: 14px; padding: 6px 14px 6px 12px; max-width: calc(100vw - 80px); }
+  .leaflet-bottom.leaflet-left .toolbar, .leaflet-bottom.leaflet-left .legend { width: calc(100vw - 100px); }
+}
+
+/* ---- legend: amphibian rows are round dots that look like the dots on the map ---- */
 .legend-item[data-species] .box {
   width: 14px; height: 14px; border-radius: 50%;
   background: var(--c); border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35);
 }
-.legend-item[data-species].off .box { background: #fff; border-color: #fff; box-shadow: 0 0 0 1px var(--c); }   /* hollow dot = species hidden */
-/* the example dot under the species rows uses the species colours instead of grey */
+.legend-item[data-species].off .box { background: #fff; border-color: #fff; box-shadow: 0 0 0 1px var(--c); }
 .ring-eg { background: conic-gradient(#0072b2 0 33.3%, #d55e00 0 66.6%, #e69f00 0); }
+
+/* phone: when the ranking card (with its amphibian pull-down) and the legend are both open, the bottom stack scrolls instead of climbing over the top buttons */
+@media (max-width: 700px) {
+  .leaflet-bottom.leaflet-left { max-height: calc(100% - 64px); overflow-y: auto; overflow-x: hidden; }
+  .sp-list { max-height: 112px; overflow-y: auto; }
+  .sp-row { padding: 6px 0; }
+  .leaflet-bottom.leaflet-left .legend { max-height: none; overflow: visible; }
+}
