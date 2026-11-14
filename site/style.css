@@ -433,12 +433,6 @@ html, body { height: 100dvh; }                       /* dvh = the visible height
 }
 
 /* ---- map symbols: small dots, purple squares ---- */
-.prot-sq-icon { background: none; border: 0; }
-.prot-sq { position: absolute; display: block; box-sizing: border-box;
-  width: var(--sq, 9px); height: var(--sq, 9px); margin: calc(var(--sq, 9px) / -2) 0 0 calc(var(--sq, 9px) / -2);
-  border: 1.5px solid #3f007d; box-shadow: 0 0 0 1px rgba(255,255,255,.85); }
-.leaflet-pane { --sq: 9px; }
-.sq-eg { display: inline-block; width: 11px; height: 11px; box-sizing: border-box; background: #8c6bb1; border: 1.5px solid #3f007d; vertical-align: -1px; margin-right: 2px; }
 
 /* ---- ranking card: amphibian pull-down ---- */
 .sp-pick { margin: 6px 0 4px; font-size: 13px; }
@@ -500,4 +494,66 @@ table.sys { font-size: 12.5px; }
   .sp-list { max-height: 112px; overflow-y: auto; }
   .sp-row { padding: 6px 0; }
   .leaflet-bottom.leaflet-left .legend { max-height: none; overflow: visible; }
+}
+
+
+/* ================= round 6 ================= */
+
+/* ---- smaller ranking card and legend ---- */
+.menu-ctl .menu-btn { min-height: 40px; font-size: 14px; padding: 5px 16px 5px 12px; }
+.menu-icon { font-size: 18px; }
+.topleft-row .toolbar { width: 300px; }
+.leaflet-top.leaflet-left .legend { width: 300px; padding: 5px 10px 6px; font-size: 12px; margin: 0 0 8px 10px; }
+.toolbar-row { padding: 3px 6px 3px 10px; }
+.toolbar-title { font-size: 13.5px; }
+.toolbar-min, .legend-min { font-size: 17px; }
+.results { padding: 2px 10px 8px; }
+#results-list { max-height: 19vh; font-size: 12.5px; padding-left: 18px; line-height: 1.3; }
+#results-list li { padding: 3px 2px; }
+.results-note, .rank { font-size: 11.5px; }
+.rank select { font-size: 11.5px; }
+.sp-pick { font-size: 12px; margin: 4px 0 2px; }
+.sp-pick > summary { padding: 2px 24px 2px 8px; }
+.more-btn { padding: 4px 8px; font-size: 12px; margin-top: 4px; }
+.legend-title { font-size: 13px; }
+.legend-hint { font-size: 10.5px; }
+.legend-sub { font-size: 10.5px; margin: 5px 0 2px; padding-top: 3px; }
+.legend-item { padding: 0; line-height: 1.35; }
+.legend-item .box { width: 12px; height: 12px; }
+.legend-item[data-species] .box { width: 12px; height: 12px; }
+.legend-item .count { font-size: 11px; }
+.legend-note { font-size: 10.5px; margin: 1px 0 2px; }
+.legend.zones .legend-item[data-species], .legend.zones .legend-item[data-key] { opacity: .35; pointer-events: none; }
+
+/* ---- phone: the top bar is the title and one button; everything else opens under the button ---- */
+@media (max-width: 700px) {
+  #topbar { padding: 6px 10px; position: relative; }
+  .bar-top { flex-wrap: nowrap; align-items: center; gap: 8px; }
+  .bar-id { min-width: 0; flex: 1 1 0; }
+  .bar-title { font-size: 15.5px; line-height: 1.2; }
+  #opt-btn { flex: none; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 4px 12px; cursor: pointer;
+    border: 1.5px solid var(--accent); border-radius: 20px; background: #fff; color: var(--accent); font: 700 13px/1.2 system-ui, sans-serif; }
+  #opt-btn[aria-expanded="true"] { background: var(--accent); color: #fff; }
+  .opt-icon { font-size: 17px; line-height: 1; }
+  #bar-options { display: none; position: absolute; left: 0; right: 0; top: 100%; z-index: 1600; background: #fff;
+    padding: 8px 10px 12px; border-bottom: 1px solid #ccc; box-shadow: 0 8px 12px rgba(0,0,0,.25);
+    max-height: calc(100dvh - 90px); overflow-y: auto; }
+  #topbar.opts-open #bar-options { display: block; }
+  #bar-options #filter-note { display: block; white-space: normal; overflow: visible; font-size: 12px; margin: 0 0 8px; }
+  #bar-options #status { margin-bottom: 8px; }
+  #bar-options .bar-bottom { border-top: 0; margin-top: 0; padding-top: 0; }
+  #bar-options #filter-bar { flex-wrap: wrap; overflow: visible; }
+  .leaflet-bottom.leaflet-left .toolbar, .leaflet-bottom.leaflet-left .legend { width: min(300px, calc(100vw - 100px)); max-width: none; }
+}
+@media (min-width: 701px) { #opt-btn { display: none; } }
+
+/* laptop: drop the words "Québec status" and "Focus" in front of the chips so the chips and the two pull-downs fit on one line */
+@media (min-width: 701px) and (max-width: 1500px) {
+  #filter-bar .chip-label { display: none; }
+  #filter-bar { gap: 5px; }
+}
+@media (min-width: 701px) {
+  .bar-bottom { flex-wrap: nowrap; align-items: flex-start; }
+  #filter-bar { flex: 1 1 0; min-width: 0; }
+  .visuals { flex: none; flex-wrap: nowrap; }
 }

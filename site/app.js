@@ -3,6 +3,32 @@
 // (Once the data loads, section 6 zooms the map to fit it.)
 // The +/- zoom buttons go top left, under the menu button (added in section 10).
 const isPhone = () => window.innerWidth < 700;
+
+// PHONE TOP BAR. On a phone the bar is just the title and one "Filters and options" button. The numbers, the filter
+// chips and the two pull-downs sit in a box that opens under the button and closes when you press the button again,
+// pick a region or basemap, tap the map, or press Escape.
+(function () {
+  if (!isPhone()) return;
+  const bar = document.getElementById('topbar');
+  const box = document.createElement('div');
+  box.id = 'bar-options';
+  ['filter-note', 'status'].forEach(id => box.appendChild(document.getElementById(id)));
+  box.appendChild(bar.querySelector('.bar-bottom'));
+  bar.appendChild(box);
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.id = 'opt-btn';
+  btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'bar-options');
+  btn.innerHTML = '<span class="opt-icon" aria-hidden="true">&#9776;</span><span id="opt-text">Filters and options</span>';
+  bar.querySelector('.bar-top').appendChild(btn);
+  window.setOptions = open => {
+    bar.classList.toggle('opts-open', open);
+    btn.setAttribute('aria-expanded', open);
+    document.getElementById('opt-text').textContent = open ? 'Close' : 'Filters and options';
+  };
+  btn.onclick = () => window.setOptions(!bar.classList.contains('opts-open'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') window.setOptions(false); });
+  ['base-select', 'area-select'].forEach(id => document.getElementById(id).addEventListener('change', () => window.setOptions(false)));
+})();
 // On a phone, keep popups narrow and below the buttons at the top of the map.
 L.Popup.mergeOptions({ maxWidth: 260, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, 100] });
 const map = L.map('map', { zoomControl: false }).setView([52, -72], 5);
@@ -49,7 +75,6 @@ let currentBase = baseMaps['Street map (OpenStreetMap)'];
 map.createPane('habitatPane');   map.getPane('habitatPane').style.zIndex = 400;
 map.createPane('protectedPane'); map.getPane('protectedPane').style.zIndex = 450;
 map.createPane('overlapPane');   map.getPane('overlapPane').style.zIndex = 500;
-map.createPane('squarePane');    map.getPane('squarePane').style.zIndex = 590;  // purple squares for protected areas (below the dots)
 map.createPane('dotPane');       map.getPane('dotPane').style.zIndex = 600;     // the dots (section 4) sit above everything
 map.createPane('regionPane');    map.getPane('regionPane').style.zIndex = 610;  // the red outline of a region
 map.getPane('regionPane').style.pointerEvents = 'none';
@@ -162,17 +187,15 @@ const provLevels = [
 ];
 
 // Which filters are on (null = no filter). The habitat shows a shape only if it passes all of them.
-const filters = { prov: null, unprot: null };
+const filters = { prov: null, unprot: null, zones: null };
 let allHabitat = [];                       // every habitat shape, shown or not
 
 // DOTS. Many habitats are tiny, so zoomed out their shapes are almost invisible. Each habitat also gets a dot
 // at its centre while the map is zoomed out (zoom 12 or less). The dot is in the species colour. A dark-purple
 // ring means the habitat overlaps a protected area, a white ring means it does not. A dot opens the same popup.
-const DOT_MAX_ZOOM = 10;                    // above this zoom the dots and squares are gone and only the shapes show
-// The dot and the square get smaller as you zoom in. The square is bigger than the dot, so a protected habitat
-// shows as a dot inside a purple square.
+const DOT_MAX_ZOOM = 10;                    // above this zoom the dots are gone and only the shapes show
+// The dot gets smaller as you zoom in.
 const dotRadius = z => Math.max(2, 3.5 - (z - 5) * 0.3);
-const squareSize = z => Math.max(6, 9 - (z - 5) * 0.6);
 const dotGroup = L.layerGroup();
 const dotOf = new Map();                   // habitat shape -> its dot
 function makeDots() {
@@ -189,8 +212,6 @@ function makeDots() {
 function syncDots() {
   const zoomedOut = map.getZoom() <= DOT_MAX_ZOOM;
   const r = dotRadius(map.getZoom());
-  map.getPane('squarePane').style.setProperty('--sq', squareSize(map.getZoom()) + 'px');
-  if (typeof syncSquares === 'function') syncSquares();
   allHabitat.forEach(l => {
     const dot = dotOf.get(l);
     if (!dot) return;
@@ -252,11 +273,40 @@ function buildFilterBar(sites) {
     el.style.setProperty('--c', '#555');
     el.title = 'Show only the habitat that no protected area covers. Click again to show all.';
     el.innerHTML = '<span class="sw"></span>' + (window.innerWidth < 700 ? 'No protection' : 'Only habitat with no protection') + ' <span class="n">' + nUn + '</span>';
-    el.onclick = () => { filters.unprot = filters.unprot ? null : 'yes'; setFocus(!!filters.unprot); refreshHabitat(); };
+    el.onclick = () => { if (!filters.unprot) setZonesOnly(false); filters.unprot = filters.unprot ? null : 'yes'; setFocus(!!filters.unprot); refreshHabitat(); };
     makeButton(el);
     bar.appendChild(el);
   }
+  // "Only protection zones": hides the habitat and shows just the protected areas.
+  const zel = document.createElement('span');
+  zel.className = 'chip';
+  zel.dataset.kind = 'zones'; zel.dataset.code = 'yes';
+  zel.style.setProperty('--c', '#555');
+  zel.title = 'Show only the protection zones (no habitat). Click again to show all.';
+  zel.innerHTML = '<span class="sw"></span>Only protection zones';
+  zel.onclick = () => {
+    if (!filters.zones && filters.unprot) { filters.unprot = null; setFocus(false); }
+    setZonesOnly(!filters.zones); refreshHabitat();
+  };
+  makeButton(zel);
+  bar.appendChild(zel);
   map.invalidateSize();                      // the bar changed height, so tell the map
+}
+
+// "Only protection zones" hides the habitat (shapes, dots) and the overlap, so only the protected areas are left.
+const hiddenForZones = [];
+function setZonesOnly(on) {
+  filters.zones = on ? 'yes' : null;
+  if (on) {
+    [groups.habitat, groups.overlap].forEach(g => { if (g && map.hasLayer(g)) { map.removeLayer(g); hiddenForZones.push(g); } });
+    map.removeLayer(dotGroup);
+    map.closePopup();
+  } else {
+    hiddenForZones.splice(0).forEach(g => map.addLayer(g));
+    if (!map.hasLayer(dotGroup)) dotGroup.addTo(map);
+  }
+  const lg = document.querySelector('.legend');
+  if (lg) lg.classList.toggle('zones', on);
 }
 
 // "Show only habitat with no protection" also hides the protected areas and the overlap, so only the
@@ -270,7 +320,6 @@ function setFocus(on) {
   }
   const lg = document.querySelector('.legend');
   if (lg) lg.classList.toggle('focus', on);
-  if (typeof syncSquares === 'function') syncSquares();
 }
 
 
@@ -315,6 +364,23 @@ function addGroup(key, url, pane, base, popupFn, filterFn, after) {
         'The map data did not load, so the map is empty. Check your internet connection and reload the page. If it keeps happening, the data file is missing from the site.';
     });
 }
+
+
+// FIRST VIEW. Zoom to all the habitat, keeping it clear of the cards on the left (desktop) or at the bottom (phone).
+// The top bar can change height after the page loads (fonts, wrapping chips), which used to leave the habitat too high.
+// So the map re-checks its size and re-fits a few times, until you move the map yourself.
+let userMoved = false;
+['mousedown', 'touchstart', 'wheel', 'keydown'].forEach(ev => map.getContainer().addEventListener(ev, () => { userMoved = true; }, { passive: true }));
+function fitAll() {
+  if (userMoved || !allHabitat.length) return;
+  map.invalidateSize();
+  map.fitBounds(groups.habitat.getBounds(), isPhone()
+    ? { paddingTopLeft: [20, 70], paddingBottomRight: [20, 150] }
+    : { paddingTopLeft: [360, 50], paddingBottomRight: [60, 50] });
+}
+window.addEventListener('load', () => setTimeout(fitAll, 150));
+window.addEventListener('resize', () => setTimeout(fitAll, 150));
+if (window.ResizeObserver) new ResizeObserver(() => { map.invalidateSize(); }).observe(document.getElementById('map'));
 
 
 // 6. LAYER 1: Amphibian habitat (bottom)
@@ -377,7 +443,7 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
 
     setUpSearch();                                       // section 10
     fillPanel(sites);                                    // section 11
-    map.fitBounds(groups.habitat.getBounds(), { padding: [30, 30] });           // zoom to the data
+    fitAll();                                                                   // zoom to the data (and again once the page has settled)
     syncDots();
     addRegionButtons();
   });
@@ -413,33 +479,7 @@ function setProtType(id, on) {
   (protLayers[id] || []).forEach(l => on ? groups.protected.addLayer(l) : groups.protected.removeLayer(l));
   on ? hiddenTypes.delete(id) : hiddenTypes.add(id);
   document.querySelector('.legend-item[data-ptype="' + id + '"]').classList.toggle('off', !on);
-  syncSquares();
 }
-
-// PURPLE SQUARES. Zoomed out, a protected area is a few pixels wide and hard to see, so each one also gets a small
-// square (in its legend colour) at its centre. The squares go away at the same zoom as the dots.
-const squareGroup = L.layerGroup().addTo(map);
-const squareOf = new Map();                 // protected shape -> { square, type id }
-function makeSquares() {
-  groups.protected.eachLayer(l => {
-    const p = l.feature.properties, t = protTypeOf(p.DESIGNOM);
-    const sq = L.marker(l.getBounds().getCenter(), {
-      pane: 'squarePane', keyboard: false, title: p.NOM || 'Protected area',
-      icon: L.divIcon({ className: 'prot-sq-icon', html: '<span class="prot-sq" style="background:' + t.color + '"></span>', iconSize: [0, 0] })
-    });
-    sq.on('click', () => l.openPopup(sq.getLatLng()));
-    squareOf.set(l, { sq: sq, id: t.id });
-  });
-}
-function syncSquares() {
-  const want0 = map.getZoom() <= DOT_MAX_ZOOM && groups.protected && map.hasLayer(groups.protected);
-  squareOf.forEach(v => {
-    const want = want0 && !hiddenTypes.has(v.id);
-    if (want && !squareGroup.hasLayer(v.sq)) squareGroup.addLayer(v.sq);
-    if (!want && squareGroup.hasLayer(v.sq)) squareGroup.removeLayer(v.sq);
-  });
-}
-map.on('zoomend', syncSquares);
 
 addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles.protected, protPopup, undefined,
   data => {
@@ -456,8 +496,6 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
       (protLayers[t.id] = protLayers[t.id] || []).push(l);
       counts[t.id] = (counts[t.id] || 0) + 1;
     });
-    makeSquares();
-    syncDots();
     // one legend row per type that is in the data
     const box = document.getElementById('legend-protected');
     protTypes.filter(t => counts[t.id]).forEach(t => {
@@ -526,7 +564,6 @@ legend.onAdd = () => {
              '<div class="legend-sub">Amphibian habitat</div><div id="legend-species"></div>' +
              '<div class="legend-note"><span class="ring-eg"></span> Round dot = one habitat site. Purple ring = it overlaps a protected area.</div>' +
              '<div class="legend-sub">Protected areas</div>' +
-             '<div class="legend-note"><span class="sq-eg"></span> Purple square = one protected area (shown when zoomed out).</div>' +
              '<div id="legend-protected"></div>';
   legendSections.forEach(s => {
     html += '<div class="legend-sub">' + s.title + '</div>';        // section subtitle
@@ -612,7 +649,7 @@ function showRegion(name, layers, fit) {
     }
     if (!shape) { fit(L.featureGroup(layers).getBounds()); return; }
     regionOutline = L.geoJSON(shape, { pane: 'regionPane', interactive: false,
-      style: { color: '#d7191c', weight: 3, dashArray: official ? null : '9 6', fillColor: '#d7191c', fillOpacity: 0.05 } }).addTo(map);
+      style: { color: '#d7191c', weight: 1.5, opacity: .9, dashArray: official ? null : '5 5', fillColor: '#d7191c', fillOpacity: 0.03 } }).addTo(map);
     const note = document.getElementById('filter-note');
     if (note) {
       note.dataset.keep = note.textContent;
@@ -720,6 +757,7 @@ map.on('popupopen', () => {
   if (lg && !lg.classList.contains('collapsed')) lg.querySelector('.legend-min').click();
   if (!document.getElementById('results').classList.contains('hidden')) document.getElementById('results-toggle').click();
 });
+map.on('click', () => { if (window.setOptions) window.setOptions(false); });
 map.on('popupopen', e => { if (highlightLayer && e.popup._source !== highlightLayer) clearHighlight(); });
 map.on('popupclose', e => { if (highlightLayer && e.popup._source === highlightLayer) clearHighlight(); });
 
@@ -810,6 +848,7 @@ function setUpSearch() {
 
   // Zoom to a habitat from the list, outline it in yellow and open its popup.
   function showHabitat(r) {
+    if (filters.zones) { setZonesOnly(false); refreshHabitat(); }      // "only protection zones" is on: bring the habitat back
     if (!map.hasLayer(groups.habitat)) map.addLayer(groups.habitat);
     // in case the legend or a chip hid this habitat, show it again
     if (!groups.habitat.hasLayer(r.layer)) { hiddenSpecies.delete(r.p.SNAME); filters.prov = null; filters.unprot = null; setFocus(false); refreshHabitat(); }
