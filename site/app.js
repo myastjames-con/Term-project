@@ -4,7 +4,7 @@
 // The +/- zoom buttons go top left, under the menu button (added in section 10).
 const isPhone = () => window.innerWidth < 700;
 
-// PHONE TOP BAR. On a phone the bar is just the title and one "Filters and options" button. The numbers, the filter
+// PHONE TOP BAR. On a phone the bar is just the title and one "Options" button. The numbers, the filter
 // chips and the two pull-downs sit in a box that opens under the button and closes when you press the button again,
 // pick a region or basemap, tap the map, or press Escape.
 (function () {
@@ -18,12 +18,12 @@ const isPhone = () => window.innerWidth < 700;
   const btn = document.createElement('button');
   btn.type = 'button'; btn.id = 'opt-btn';
   btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'bar-options');
-  btn.innerHTML = '<span class="opt-icon" aria-hidden="true">&#9776;</span><span id="opt-text">Filters and options</span>';
+  btn.innerHTML = '<span class="opt-icon" aria-hidden="true">&#9776;</span><span id="opt-text">Options</span>';
   bar.querySelector('.bar-top').appendChild(btn);
   window.setOptions = open => {
     bar.classList.toggle('opts-open', open);
     btn.setAttribute('aria-expanded', open);
-    document.getElementById('opt-text').textContent = open ? 'Close' : 'Filters and options';
+    document.getElementById('opt-text').textContent = open ? 'Close' : 'Options';
   };
   btn.onclick = () => window.setOptions(!bar.classList.contains('opts-open'));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') window.setOptions(false); });
@@ -375,7 +375,7 @@ function fitAll() {
   if (userMoved || !allHabitat.length) return;
   map.invalidateSize();
   map.fitBounds(groups.habitat.getBounds(), isPhone()
-    ? { paddingTopLeft: [20, 70], paddingBottomRight: [20, 150] }
+    ? { paddingTopLeft: [16, 60], paddingBottomRight: [16, 110] }
     : { paddingTopLeft: [360, 50], paddingBottomRight: [60, 50] });
 }
 window.addEventListener('load', () => setTimeout(fitAll, 150));
@@ -684,7 +684,7 @@ function addRegionButtons() {
 L.control.zoom({ position: 'topright' }).addTo(map);
 
 // On a phone the menu button is alone at the top left, and the list and legend are stacked together at the bottom.
-const menuHtml = '<button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="info-panel"><span class="menu-icon" aria-hidden="true">&#9776;</span><span class="menu-text">Learn about the amphibians and data</span></button>';
+const menuHtml = '<button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="info-panel" aria-label="Learn about the amphibians and data" title="Learn about the amphibians and data"><span aria-hidden="true">i</span></button>';
 const toolbar = L.control({ position: isPhone() ? 'bottomleft' : 'topleft' });
 toolbar.onAdd = () => {
   const outer = L.DomUtil.create('div', 'topleft-row');

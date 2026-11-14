@@ -557,3 +557,24 @@ table.sys { font-size: 12.5px; }
   #filter-bar { flex: 1 1 0; min-width: 0; }
   .visuals { flex: none; flex-wrap: nowrap; }
 }
+
+
+/* ================= round 7 ================= */
+/* the info button is a small round "i" */
+.menu-ctl .menu-btn { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; min-height: 0; padding: 0;
+  border-radius: 50%; border: 2px solid var(--accent); background: #fff; color: var(--accent); font: italic 700 22px/1 Georgia, "Times New Roman", serif; }
+.menu-ctl .menu-btn:hover { background: #eef3ea; }
+@media (max-width: 700px) {
+  .menu-ctl .menu-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; max-width: none; padding: 0; }
+  /* bottom cards: slimmer, wider, one line each */
+  .leaflet-bottom.leaflet-left .toolbar, .leaflet-bottom.leaflet-left .legend { width: min(340px, calc(100vw - 24px)); }
+  .leaflet-bottom.leaflet-left .toolbar { margin-bottom: 6px; }
+  .leaflet-bottom.leaflet-left .legend { margin-bottom: 22px; }
+  .toolbar-row { min-height: 36px; padding: 2px 4px 2px 10px; }
+  .toolbar-title { font-size: 13px; }
+  .toolbar-min, .legend-min { min-width: 40px; min-height: 36px; }
+  .legend.collapsed { padding: 0 10px; }
+  .legend-head { min-height: 36px; }
+  .bar-title { font-size: 15px; }
+  #opt-btn { min-height: 38px; padding: 4px 12px; }
+}
