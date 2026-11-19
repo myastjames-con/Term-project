@@ -428,9 +428,7 @@ html, body { height: 100dvh; }                       /* dvh = the visible height
 .legend-title { cursor: pointer; }
 .toolbar-title:hover, .legend-title:hover { text-decoration: underline; }
 /* if the menu button, the ranking card and the legend are all open and the window is short, the left column scrolls so nothing is cut off */
-@media (min-width: 701px) {
-  .leaflet-top.leaflet-left { max-height: 100%; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
-}
+
 
 /* ---- map symbols: small dots, purple squares ---- */
 
@@ -578,3 +576,32 @@ table.sys { font-size: 12.5px; }
   .bar-title { font-size: 15px; }
   #opt-btn { min-height: 38px; padding: 4px 12px; }
 }
+
+
+/* ================= round 8 ================= */
+/* laptop: the "i" button, the ranking card and the legend sit side by side in one row at the top left */
+@media (min-width: 701px) {
+  .leaflet-top.leaflet-left { display: flex; flex-wrap: wrap; align-items: flex-start; max-width: calc(100% - 80px); }
+  .leaflet-top.leaflet-left .leaflet-control { float: none; clear: none; margin: 10px 0 0 10px; }
+  .leaflet-top.leaflet-left .legend { margin: 10px 0 0 10px; }
+  .topleft-row .toolbar { width: 270px; }
+  .leaflet-top.leaflet-left .legend { width: 270px; }
+}
+/* smaller but darker cards */
+.toolbar, .legend { border: 1px solid #5f6f5b; box-shadow: 0 2px 8px rgba(0,0,0,.35); color: #000; }
+.toolbar-title, .legend-title { color: #0b2207; font-weight: 800; font-size: 12.5px; }
+.legend-hint { color: #222; font-size: 10px; }
+.legend-sub { color: #1c1c1c; font-size: 10px; font-weight: 800; }
+.legend-item { font-size: 11.5px; color: #000; }
+.legend-item .count, .legend-note { color: #222; }
+.legend-note { font-size: 10px; }
+.results-note, .rank, .results .small { color: #1c1c1c; }
+#results-list { font-size: 11.5px; }
+#results-list li { color: #000; }
+/* the note in the top bar: shorter and darker */
+#filter-note { color: #1c1c1c; font-size: 12px; font-weight: 500; }
+@media (max-width: 700px) { #bar-options #filter-note { color: #1c1c1c; } }
+
+/* round 9: the note under the title, smaller and darker */
+#filter-note { color: #000; font-size: 11.5px; font-weight: 600; line-height: 1.3; }
+@media (max-width: 700px) { #bar-options #filter-note { color: #000; } }

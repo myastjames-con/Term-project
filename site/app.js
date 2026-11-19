@@ -31,7 +31,7 @@ const isPhone = () => window.innerWidth < 700;
 })();
 // On a phone, keep popups narrow and below the buttons at the top of the map.
 L.Popup.mergeOptions({ maxWidth: 260, autoPanPaddingTopLeft: [10, 60], autoPanPaddingBottomRight: [10, 100] });
-const map = L.map('map', { zoomControl: false }).setView([52, -72], 5);
+const map = L.map('map', { zoomControl: false, zoomSnap: 0.25 }).setView([52, -72], 5);   // zoomSnap 0.25: the first view can zoom in a little closer than whole steps
 
 
 // 2. Basemap
@@ -375,8 +375,8 @@ function fitAll() {
   if (userMoved || !allHabitat.length) return;
   map.invalidateSize();
   map.fitBounds(groups.habitat.getBounds(), isPhone()
-    ? { paddingTopLeft: [16, 60], paddingBottomRight: [16, 110] }
-    : { paddingTopLeft: [360, 50], paddingBottomRight: [60, 50] });
+    ? { paddingTopLeft: [10, 56], paddingBottomRight: [10, 100] }
+    : { paddingTopLeft: [50, 70], paddingBottomRight: [50, 40] });
 }
 window.addEventListener('load', () => setTimeout(fitAll, 150));
 window.addEventListener('resize', () => setTimeout(fitAll, 150));
@@ -413,8 +413,7 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
         stat(nProtected, 'overlap a protected area') +
         stat(num(pctArea, 1) + '%', 'of habitat area protected');
       const regions = (meta.regions || []).join(' and ');
-      const where = (regions ? 'Area shown: ' + regions + '. ' : '') +
-                    (meta.protected_scope === 'near' ? 'Protected areas shown: those within ' + meta.protected_near_km + ' km of a habitat.' : '');
+      const where = meta.protected_scope === 'near' ? 'Protected areas shown: those within ' + meta.protected_near_km + ' km of a habitat.' : '';
       document.getElementById('filter-note').textContent = where;
       const note = document.getElementById('scope-note');
       if (note) note.textContent = ' ' + (regions || 'see the notebook') + ' (Québec administrative regions)' +
@@ -575,7 +574,7 @@ legend.onAdd = () => {
   div.innerHTML = html + '</div>';
   div.querySelectorAll('.legend-item').forEach(makeButton);
 
-  if (window.innerWidth < 700 || window.innerHeight < 800) div.classList.add('collapsed');   // on a phone or a short window the legend starts closed so the map is visible
+  div.classList.add('collapsed');   // the legend starts closed so the map is clear
 
   // Clicking the legend doesn't click the map behind it.
   L.DomEvent.disableClickPropagation(div);
@@ -738,7 +737,7 @@ document.getElementById('results-toggle').onclick = () => {
 // the whole title bar of the list is a button too
 document.querySelector('.toolbar-title').onclick = () => document.getElementById('results-toggle').click();
 // on a big window the list starts open; on a phone or a short window it starts as one bar
-if (window.innerWidth >= 700 && window.innerHeight >= 800) document.getElementById('results-toggle').click();
+// the list starts closed too (press its bar to open it)
 
 let highlight = null;     // the yellow outline around the habitat you clicked in the list
 let highlightLayer = null; // the habitat that outline belongs to

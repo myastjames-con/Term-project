@@ -159,7 +159,12 @@ I do not fully understand how `sjoin_nearest` finds the closest polygon without 
 | 7. Mouse in my pocket | pass: Tab reaches the menu button, filter chips, both Visuals pull-downs, legend rows and ranking card, and I can see which one is selected | none needed / fixed in commit "your commit name" |
 | 8. Accessibility audit | Lighthouse accessibility score: 98 | none needed |
 
-## Part 3: what I found in testing, and one fix
-The findings table is in `A3_Part3_StJames`.The most serious problem we ran into during testing was the confusing of the legend compared to the maps, since on the map the habitat sites are seen as coloured circles when they are far away, but in th legend they are just coloured squares. It is a severity 1 as they still understood everything and did not slow them down, but it would look more coherent with this change. I made the legend have coloured circles to match the map so it can look better. (the two screenshots are included in the A3_Part3_StJames docx).
+## Part 3: what I found, and one fix
+Evidence: The most serious problem we ran into during testing was the confusing of the legend compared to the maps, since on the map the habitat sites are seen as coloured circles when they are far away, but in th legend they are just coloured squares. She would press on and off the layers and zoom into the map to make sure that she was looking at the right habitats correspondnig to the legend. It wanted clear enough with only the coulours and not circled. She said this when I asked her to find a Western Chorus frog habitat with no protection.
+Severity: It is a severity 1 as they still understood everything and did not slow them down, but it would look more coherent with this change.
+My change: I made the legend have coloured circles to match the map so it can look better. (the two screenshots are included in the A3_Part3_StJames docx).
+Recheck: They pressed the top button that says "only habitat with no protection" then went to look at the legend to see what colour western Chorus frogs are. They pressed an orange colour(the right colour) in the brossard area that had no protection over it. 
+ Fixed means: they do it without hesitating at that spot
 
+![alt text](image-1.png)
 © 2026 Mya St-James. All rights reserved.
