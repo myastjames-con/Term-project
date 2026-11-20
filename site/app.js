@@ -442,7 +442,13 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
 
     setUpSearch();                                       // section 10
     fillPanel(sites);                                    // section 11
-    fitAll();                                                                   // zoom to the data (and again once the page has settled)
+    fitAll();
+    // Lab 9 (route B2): the map remembers where the reader left it.
+    if (typeof rememberView === 'function') {
+      const saved = geog464Load(geog464StorageKey('view'), null);   // is there a saved view?
+      rememberView(map);                                             // restores it and adds "Reset view"
+      if (saved) userMoved = true;                                   // stop the automatic zoom-to-data from undoing it
+    }                                                                 // zoom to the data (and again once the page has settled)
     syncDots();
     addRegionButtons();
   });
