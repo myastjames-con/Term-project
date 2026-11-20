@@ -196,6 +196,14 @@ let allHabitat = [];                       // every habitat shape, shown or not
 const DOT_MAX_ZOOM = 10;                    // above this zoom the dots are gone and only the shapes show
 // The dot gets smaller as you zoom in.
 const dotRadius = z => Math.max(2, 3.5 - (z - 5) * 0.3);
+// Click a dot or a protected area: zoom in to it (never zoom out), but not too close.
+const CLICK_MAX_ZOOM = 12;                  // the closest a click will zoom. Bigger number = closer.
+function zoomToLayer(layer) {
+  const pad = { paddingTopLeft: [isPhone() ? 20 : 60, 80], paddingBottomRight: [60, isPhone() ? 120 : 60], maxZoom: CLICK_MAX_ZOOM };
+  const b = layer.getBounds();
+  const z = Math.min(map.getBoundsZoom(b, false, L.point(120, 140)), CLICK_MAX_ZOOM);
+  if (z > map.getZoom()) map.fitBounds(b, pad);
+}
 const dotGroup = L.layerGroup();
 const dotOf = new Map();                   // habitat shape -> its dot
 function makeDots() {
@@ -205,10 +213,7 @@ function makeDots() {
       pane: 'dotPane', radius: dotRadius(map.getZoom()), weight: p.is_protected ? 2 : 1.5, color: p.is_protected ? '#3f007d' : '#ffffff',
       fillColor: colourFor(p.SNAME), fillOpacity: 1
     });
-        dot.on('click', () => {                                   // click a dot: zoom to that habitat and open its popup
-      map.fitBounds(l.getBounds(), { paddingTopLeft: [isPhone() ? 20 : 60, 80], paddingBottomRight: [60, isPhone() ? 120 : 60], maxZoom: 14 });
-      l.openPopup(dot.getLatLng());
-    });
+    dot.on('click', () => { zoomToLayer(l); l.openPopup(dot.getLatLng()); });   // click a dot: zoom to that habitat and open its popup
     dotOf.set(l, dot);
   });
 }
@@ -347,6 +352,7 @@ function addGroup(key, url, pane, base, popupFn, filterFn, after) {
         style: () => base,                    // apply the look
         onEachFeature: (f, layer) => {        // runs once for every shape
           layer.bindPopup(popupFn(f.properties));   // click a shape = popup
+          if (key !== 'habitat') layer.on('click', () => zoomToLayer(layer));   // click a protected area = zoom to it too
           layer.on({
             // hover: thicker border and slightly more solid
             mouseover: e => e.target.setStyle({
@@ -358,6 +364,7 @@ function addGroup(key, url, pane, base, popupFn, filterFn, after) {
           });
         }
       }).addTo(map);
+      let n = 0; groups[key].eachLayer(l => { l._sid = n++; });   // a fixed number per shape, so a popup can be found again after a reload
       if (after) after(data);                 // run the extra code, if there is any
     })
     .catch(err => {
@@ -378,12 +385,36 @@ function fitAll() {
   if (userMoved || !allHabitat.length) return;
   map.invalidateSize();
   map.fitBounds(groups.habitat.getBounds(), isPhone()
-    ? { paddingTopLeft: [10, 56], paddingBottomRight: [10, 100] }
-    : { paddingTopLeft: [50, 70], paddingBottomRight: [50, 40] });
+    ? { paddingTopLeft: [10, 56], paddingBottomRight: [10, 100], animate: false }
+    : { paddingTopLeft: [50, 70], paddingBottomRight: [50, 40], animate: false });
 }
 window.addEventListener('load', () => setTimeout(fitAll, 150));
 window.addEventListener('resize', () => setTimeout(fitAll, 150));
 if (window.ResizeObserver) new ResizeObserver(() => { map.invalidateSize(); }).observe(document.getElementById('map'));
+
+
+// Lab 9: remember the open popup. Which layer + which shape + where, saved when a popup opens and cleared when it closes.
+const popupKey = () => geog464StorageKey('popup');
+let popupRestored = false;
+map.on('popupopen', e => {
+  if (typeof geog464Save !== 'function') return;
+  const src = e.popup._source;
+  const group = ['habitat', 'protected', 'overlap'].find(k => groups[k] && src && src._sid !== undefined && groups[k].hasLayer(src));
+  if (!group) return;
+  const at = e.popup.getLatLng();
+  geog464Save(popupKey(), { group: group, id: src._sid, lat: at.lat, lng: at.lng });
+});
+map.on('popupclose', () => { if (popupRestored && typeof geog464Save === 'function') geog464Save(popupKey(), null); });
+function restorePopup() {
+  if (popupRestored || typeof geog464Load !== 'function') return;
+  const s = geog464Load(popupKey(), null);
+  if (!s) { popupRestored = true; return; }
+  const g = groups[s.group];
+  if (!g || (s.group === 'habitat' && !allHabitat.length)) return;                // that layer has not loaded yet: try again when it has
+  const layer = g.getLayers().find(l => l._sid === s.id);
+  popupRestored = true;
+  if (layer) layer.openPopup(L.latLng(s.lat, s.lng));
+}
 
 
 // 6. LAYER 1: Amphibian habitat (bottom)
@@ -445,8 +476,7 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
 
     setUpSearch();                                       // section 10
     fillPanel(sites);                                    // section 11
-    fitAll();
-      fitAll();                                                                   // zoom to the data (and again once the page has settled)
+    fitAll();                                                                   // zoom to the data (and again once the page has settled)
     // Lab 9 (route B2): the map remembers where the reader left it.
     if (typeof rememberView === 'function') {
       const saved = geog464Load(geog464StorageKey('view'), null);   // is there a saved view?
@@ -455,6 +485,7 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
     }
     syncDots();
     addRegionButtons();
+    restorePopup();                                                  // Lab 9: reopen the popup the reader had open
   });
 
 
@@ -517,6 +548,7 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
       makeButton(row);
       box.appendChild(row);
     });
+    restorePopup();
   });
 
 
@@ -524,7 +556,8 @@ addGroup('protected', '../data/protected_areas.geojson', 'protectedPane', styles
 // The piece of habitat that overlaps a protected area (made in the notebook).
 addGroup('overlap', '../data/amphibian_protected_overlap.geojson', 'overlapPane', styles.overlap,
   p => '<b>' + esc(p.GCOMNAME || p.SNAME) + ' habitat inside a protected area</b><br>' + esc(p.NOM || '') + '<br>' +
-       esc(inEnglish(designationEnglish, p.DESIGNOM)) + '<br>Legend group: ' + typeChip(p.DESIGNOM));
+       esc(inEnglish(designationEnglish, p.DESIGNOM)) + '<br>Legend group: ' + typeChip(p.DESIGNOM),
+  undefined, () => restorePopup());
 
 
 // 9. Legend
