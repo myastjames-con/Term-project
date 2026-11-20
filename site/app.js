@@ -443,27 +443,15 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
     setUpSearch();                                       // section 10
     fillPanel(sites);                                    // section 11
     fitAll();
+      fitAll();                                                                   // zoom to the data (and again once the page has settled)
     // Lab 9 (route B2): the map remembers where the reader left it.
     if (typeof rememberView === 'function') {
       const saved = geog464Load(geog464StorageKey('view'), null);   // is there a saved view?
       rememberView(map);                                             // restores it and adds "Reset view"
       if (saved) userMoved = true;                                   // stop the automatic zoom-to-data from undoing it
-    }                                                                 // zoom to the data (and again once the page has settled)
+    }
     syncDots();
     addRegionButtons();
-    sel.onchange = () => {
-    if (!sel.value) { clearRegionOutline(); fit(L.featureGroup(allHabitat).getBounds()); return; }
-    showRegion(sel.value, byRegion[sel.value], b => fit(b));
-  };  // Lab 9: remember the chosen region too (uses the helpers from remember.js).
-  if (typeof geog464Save === 'function') {
-    const regionKey = geog464StorageKey('region');
-    sel.addEventListener('change', () => geog464Save(regionKey, sel.value));       // save every time the pull-down changes
-    const savedRegion = geog464Load(regionKey, '');
-    if (savedRegion && byRegion[savedRegion]) {                                    // on load: bring the outline and the pull-down back,
-      sel.value = savedRegion;                                                     // but do not zoom (the saved view already did that)
-      showRegion(savedRegion, byRegion[savedRegion], () => {});
-    }
-  }
   });
 
 
@@ -691,6 +679,17 @@ function addRegionButtons() {
     if (!sel.value) { clearRegionOutline(); fit(L.featureGroup(allHabitat).getBounds()); return; }
     showRegion(sel.value, byRegion[sel.value], b => fit(b));
   };
+
+  // Lab 9: remember the chosen region too (uses the helpers from remember.js).
+  if (typeof geog464Save === 'function') {
+    const regionKey = geog464StorageKey('region');
+    sel.addEventListener('change', () => geog464Save(regionKey, sel.value));       // save every time the pull-down changes
+    const savedRegion = geog464Load(regionKey, '');
+    if (savedRegion && byRegion[savedRegion]) {                                    // on load: bring the outline and the pull-down back,
+      sel.value = savedRegion;                                                     // but do not zoom (the saved view already did that)
+      showRegion(savedRegion, byRegion[savedRegion], () => {});
+    }
+  }
 }
 
 
