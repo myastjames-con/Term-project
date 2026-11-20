@@ -20,17 +20,19 @@ Term-project/
     protected_areas.geojson             protected areas shown on the map
     amphibian_protected_overlap.geojson the parts of habitat inside a protected area
     meta.json                           counts and settings written by the notebook
+    regions.geojson                     the outlines of the study regions (written by the notebook), used for the red region outline
     frog_protected_overlap.geojson, protected_monteregie.geojson, longueuil_order_lots.geojson   earlier (A2) files
     *.gpkg                              NOT included (over 20 MB), see "Data not included"
   notebooks/
     Amphibian.ipynb                     reads the data, cleans it, writes the GeoJSON files, ends with a check cell
   site/
     index.html  style.css  app.js       the page
+    remember.js                         the Lab 9 file that saves the map view in the reader's browser
   README.md
 ```
 
 ## How to run it
-To view the page: open the live link at the top. The GeoJSON files it uses are included in `data/`.
+To view the page (no downloads needed): open the live link at the top, or open `site/index.html` with Live Server (right-click, Open with Live Server). The GeoJSON files it uses are included in `data/`.
 
 To re-run the notebook: download the three datasets listed under "Data not included" into `data/`, then open `notebooks/Amphibian.ipynb` and choose Run All. The last cell prints `CHECK PASSED`.
 ## Where the data comes from
@@ -136,13 +138,13 @@ I do not fully understand how `sjoin_nearest` finds the closest polygon without 
 ### AI disclosure for A3
 **Tool and model.** Claude (Sonnet 5.5, in the Claude app).
 
-**What I asked for.** After Luke suggested showing the nearest protected area on my A2 demo, I asked Claude to help me add it: measure it in the notebook and show it in the popup of an unprotected habitat.
+**What I asked for.** After Luke suggested showing the nearest protected area on my A2 demo, I asked Claude to help me add it: measure it in the notebook and show it in the popup of an unprotected habitat. I also asked for help with the page layout, the colours, the phone layout and the species text in the side panel.
 
 **What came back.** The `sjoin_nearest` lines in the notebook (lines 26 to 31 of that cell), the popup line in `app.js` (line 317), the same information in the ranking list (line 675), and an explanation of what each line does.
 
-**What I accepted, changed or rejected.** I accepted the nearest-area lines after checking the numbers in the notebook output (line 31) and in the popups.
+**What I accepted, changed or rejected.** I accepted the nearest-area lines after checking the numbers in the notebook output (line 31) and in the popups. TODO: write one thing you changed or rejected, for example a colour, a layout choice or wording you did not keep, and why.
 
-**How the tests checked it.** I wrote the three test cases above for this feature. Claude ran them on the real data files in a headless browser, and the results above are from that run. 
+**How the tests checked it.** I wrote the three test cases above for this feature. Claude ran them on the real data files in a headless browser, and the results above are from that run. TODO: add "I also checked them on my phone on [date]" once you have.
 
 **What stayed mine.** The question, the choice of the three species, the story and wording on the page, what the tests should cover, and what I will test next.
 
@@ -155,16 +157,20 @@ I do not fully understand how `sjoin_nearest` finds the closest polygon without 
 | 3. Ask twice | fault: after picking from the list, clicking a habitat on the map left the old one outlined in yellow | fixed in commit "Fix: yellow outline stays on old answer after a map click" |
 | 4. The edge | pass: unprotected habitat shows 0 ha and "Protected by: none"; clicking empty map and a tiny habitat gave no errors | none needed |
 | 5. The data does not come | fault: if the habitat file failed to load, the page showed a developer message ("Open this page with Live Server") | fixed in commit "Fix: keyboard access, phone layout, plain-language error": the reader now sees a plain sentence and the page still works |
-| 6. On a phone | fault: the text was taking up half of the screen and my two collapsable elements (legend and question), were in from of the map and hard to read everything | I moved the legend and question to the bottom and amde the header smaller |
-| 7. Mouse in my pocket | pass: Tab reaches the menu button, filter chips, both Visuals pull-downs, legend rows and ranking card, and I can see which one is selected | none needed / fixed in commit "your commit name" |
-| 8. Accessibility audit | Lighthouse accessibility score: 98 | none needed |
+| 6. TODO: name of check 6 from the Lab 7 handout | TODO: pass, or fault and what you saw | TODO |
+| 7. Mouse in my pocket (Tab key) | TODO: pass, or fault and what you could not reach | TODO |
+| 8. Accessibility audit (Lighthouse) | TODO: score and main issue | TODO |
 
-## Part 3: what I found, and one fix
-Evidence: The most serious problem we ran into during testing was the confusing of the legend compared to the maps, since on the map the habitat sites are seen as coloured circles when they are far away, but in th legend they are just coloured squares. She would press on and off the layers and zoom into the map to make sure that she was looking at the right habitats correspondnig to the legend. It wanted clear enough with only the coulours and not circled. She said this when I asked her to find a Western Chorus frog habitat with no protection.
-Severity: It is a severity 1 as they still understood everything and did not slow them down, but it would look more coherent with this change.
-My change: I made the legend have coloured circles to match the map so it can look better. (the two screenshots are included in the A3_Part3_StJames docx).
-Recheck: They pressed the top button that says "only habitat with no protection" then went to look at the legend to see what colour western Chorus frogs are. They pressed an orange colour(the right colour) in the brossard area that had no protection over it. 
- Fixed means: they do it without hesitating at that spot
+## Part 3: what I found in testing, and one fix
 
-![alt text](image-1.png)
+
+## What my map remembers
+**What it remembers.** Three things: where the reader left the map (the centre and the zoom), the region they chose in "Zoom to region" (the pull-down and its red outline), and the popup they had open. A conservation worker usually keeps coming back to the same part of Québec, so the map reopens there and they do not have to zoom in again.
+**Where it is kept.** Personal. It is saved in the reader's own browser, on their own device (`localStorage`). Nobody else sees it, there is no server and no account, and nothing is sent anywhere. A different device or a private window starts fresh, with the map zoomed to all the habitat.
+**How a reader clears it.** "Reset view" (top left of the map) goes back to the view of all the habitat, and that new view is saved. Choosing "All regions" clears the region, and closing a popup clears the saved popup. Clearing the site's data in the browser removes everything.
+**Which file does the work.** `site/remember.js` (from the Lab 9 handout) has the `rememberView(map)` function, which saves the view and puts the map back there. `site/app.js` calls it, and I used its `geog464Save` and `geog464Load` helpers to remember the region and the popup in the same way.
+**One thing I understand about how it works.** What happens when the page loads, and why `fitAll()` (the automatic zoom to the data) had to wait for the saved view, because otherwise it zoomed to the data every time and undid the saved view.
+**How I tested it.** On the live link I moved and zoomed the map, picked a region and opened a popup, then reloaded: all three were still there. I closed the popup and chose "All regions", reloaded, and they were gone. In a private window the map started fresh. The popups, filters, ranking list and legend still worked.
+
+
 © 2026 Mya St-James. All rights reserved.
