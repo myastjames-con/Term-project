@@ -205,7 +205,10 @@ function makeDots() {
       pane: 'dotPane', radius: dotRadius(map.getZoom()), weight: p.is_protected ? 2 : 1.5, color: p.is_protected ? '#3f007d' : '#ffffff',
       fillColor: colourFor(p.SNAME), fillOpacity: 1
     });
-    dot.on('click', () => l.openPopup(dot.getLatLng()));
+        dot.on('click', () => {                                   // click a dot: zoom to that habitat and open its popup
+      map.fitBounds(l.getBounds(), { paddingTopLeft: [isPhone() ? 20 : 60, 80], paddingBottomRight: [60, isPhone() ? 120 : 60], maxZoom: 14 });
+      l.openPopup(dot.getLatLng());
+    });
     dotOf.set(l, dot);
   });
 }
