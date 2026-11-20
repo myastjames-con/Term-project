@@ -451,6 +451,19 @@ addGroup('habitat', '../data/amphibians.geojson', 'habitatPane', styles.habitat,
     }                                                                 // zoom to the data (and again once the page has settled)
     syncDots();
     addRegionButtons();
+    sel.onchange = () => {
+    if (!sel.value) { clearRegionOutline(); fit(L.featureGroup(allHabitat).getBounds()); return; }
+    showRegion(sel.value, byRegion[sel.value], b => fit(b));
+  };  // Lab 9: remember the chosen region too (uses the helpers from remember.js).
+  if (typeof geog464Save === 'function') {
+    const regionKey = geog464StorageKey('region');
+    sel.addEventListener('change', () => geog464Save(regionKey, sel.value));       // save every time the pull-down changes
+    const savedRegion = geog464Load(regionKey, '');
+    if (savedRegion && byRegion[savedRegion]) {                                    // on load: bring the outline and the pull-down back,
+      sel.value = savedRegion;                                                     // but do not zoom (the saved view already did that)
+      showRegion(savedRegion, byRegion[savedRegion], () => {});
+    }
+  }
   });
 
 
